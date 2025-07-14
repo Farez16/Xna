@@ -1,14 +1,10 @@
 package Vista;
 
-import Controlador.ControladorBotones;
-import Modelo.TextoBotones;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -18,11 +14,9 @@ import javax.swing.JPanel;
 public class Dashboard extends javax.swing.JPanel {
 
     private String correoUsuario;
-    private ControladorBotones controladorBotones;
 
     public Dashboard(String correoUsuario) {
         initComponents();
-        iniciarEfectosBotones();
         this.correoUsuario = correoUsuario;
         btnDashboard.setOpaque(false);
         btnDashboard.setContentAreaFilled(false);
@@ -44,21 +38,6 @@ public class Dashboard extends javax.swing.JPanel {
         btnSalir.setContentAreaFilled(false);
         btnSalir.setBorderPainted(false);
     }
-
-    private void iniciarEfectosBotones() {
-    // 1. Crear el mapa de botones
-    Map<String, JButton> botonesMap = new HashMap<>();
-    botonesMap.put("btnDashboard", btnDashboard);
-    botonesMap.put("btnCuenta", btnCuenta);
-    botonesMap.put("btnCertificado", btnCertificado);
-    botonesMap.put("btnJuegos", btnJuegos);
-    botonesMap.put("btnSalir", btnSalir);
-    
-    // 2. Pasar el mapa al controlador
-    TextoBotones modeloTextos = new TextoBotones();
-    controladorBotones = new ControladorBotones(botonesMap, modeloTextos);
-    controladorBotones.iniciar();
-}
 
     public String getCorreoUsuario() {
         return correoUsuario;
@@ -117,12 +96,12 @@ public class Dashboard extends javax.swing.JPanel {
     }
 
     public void mostrarVista(JPanel nuevaVista) {
-    PanelVistas.removeAll();
-    PanelVistas.setLayout(new java.awt.BorderLayout()); // Usa BorderLayout
-    PanelVistas.add(nuevaVista, java.awt.BorderLayout.CENTER);
-    PanelVistas.revalidate();
-    PanelVistas.repaint();
-}
+        PanelVistas.removeAll();
+        PanelVistas.setLayout(new java.awt.BorderLayout());
+        PanelVistas.add(nuevaVista, java.awt.BorderLayout.CENTER);
+        PanelVistas.revalidate();
+        PanelVistas.repaint();
+    }
 
     public void setNombreUsuario(String nombre) {
         lblNombre.setText(nombre);
@@ -143,7 +122,8 @@ public class Dashboard extends javax.swing.JPanel {
     public JLabel getLblSaludo() {
         return LblSaludo;
     }
-   public void actualizarImagenPerfil(String ruta) {
+
+    public void actualizarImagenPerfil(String ruta) {
         try {
             BufferedImage img;
             if (ruta.startsWith("http")) {
@@ -151,7 +131,7 @@ public class Dashboard extends javax.swing.JPanel {
             } else {
                 img = ImageIO.read(new File(ruta));
             }
-            
+
             int size = 120;
             BufferedImage circleBuffer = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = circleBuffer.createGraphics();
@@ -163,14 +143,18 @@ public class Dashboard extends javax.swing.JPanel {
             LblimagenPrincipal.setIcon(new ImageIcon(circleBuffer));
             LblimagenPrincipal.revalidate();
             LblimagenPrincipal.repaint();
-            
+
         } catch (Exception ex) {
             System.err.println("Error actualizando imagen en Dashboard: " + ex.getMessage());
         }
     }
 
+    public void mostrarMensaje(String mensaje) {
+        javax.swing.JOptionPane.showMessageDialog(this, mensaje);
+    }
+
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
@@ -218,11 +202,6 @@ public class Dashboard extends javax.swing.JPanel {
         btnDashboard.setBorder(null);
         btnDashboard.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         btnDashboard.setOpaque(true);
-        btnDashboard.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDashboardActionPerformed(evt);
-            }
-        });
         jPanel1.add(btnDashboard, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 220, 160, 42));
 
         btnCuenta.setBackground(new java.awt.Color(102, 102, 102));
@@ -233,11 +212,6 @@ public class Dashboard extends javax.swing.JPanel {
         btnCuenta.setBorder(null);
         btnCuenta.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         btnCuenta.setOpaque(true);
-        btnCuenta.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCuentaActionPerformed(evt);
-            }
-        });
         jPanel1.add(btnCuenta, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 280, 160, 42));
 
         btnCertificado.setBackground(new java.awt.Color(102, 102, 102));
@@ -258,11 +232,6 @@ public class Dashboard extends javax.swing.JPanel {
         btnJuegos.setBorder(null);
         btnJuegos.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         btnJuegos.setOpaque(true);
-        btnJuegos.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnJuegosActionPerformed(evt);
-            }
-        });
         jPanel1.add(btnJuegos, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 400, 160, 42));
 
         LblNombreProyecto.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
@@ -281,11 +250,6 @@ public class Dashboard extends javax.swing.JPanel {
         btnSalir.setText("  Salir");
         btnSalir.setBorder(null);
         btnSalir.setOpaque(true);
-        btnSalir.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSalirActionPerformed(evt);
-            }
-        });
         jPanel1.add(btnSalir, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 560, 168, 42));
 
         LblPanelSuperior.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/fondo dashboard.png"))); // NOI18N
@@ -301,26 +265,9 @@ public class Dashboard extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>
 
-    private void btnJuegosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJuegosActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnJuegosActionPerformed
-
-    private void btnCuentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCuentaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCuentaActionPerformed
-
-    private void btnDashboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDashboardActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnDashboardActionPerformed
-
-    private void btnSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalirActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnSalirActionPerformed
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify
     public javax.swing.JLabel LblLogo;
     public javax.swing.JLabel LblNombreProyecto;
     public javax.swing.JLabel LblPanelSuperior;
@@ -335,5 +282,5 @@ public class Dashboard extends javax.swing.JPanel {
     public javax.swing.JButton btnSalir;
     public javax.swing.JPanel jPanel1;
     public javax.swing.JLabel lblNombre;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration
 }
