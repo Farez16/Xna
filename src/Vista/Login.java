@@ -87,6 +87,37 @@ public class Login extends javax.swing.JFrame {
         javax.swing.JOptionPane.showMessageDialog(this, mensaje);
     }
 
+    public void resaltarBotonCrearCuenta() {
+        javax.swing.Timer timer = new javax.swing.Timer(200, null);
+        timer.addActionListener(new java.awt.event.ActionListener() {
+            int count = 0;
+            boolean highlight = false;
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (count >= 6) {
+                    btnCodigo.setBackground(new java.awt.Color(171, 52, 2));
+                    timer.stop();
+                    return;
+                }
+                btnCodigo.setBackground(highlight ? Color.WHITE : new java.awt.Color(171, 52, 2));
+                highlight = !highlight;
+                count++;
+            }
+        });
+        timer.start();
+        btnCodigo.requestFocus();
+    }
+
+    public void abrirPanelRegistro(String correo) {
+        ContrasenaNueva panelCambio = new ContrasenaNueva(correo);
+        javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Registrar nueva cuenta", true);
+        dialog.setContentPane(panelCambio);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        new Controlador.ControladorContrasenaNueva(panelCambio, correo, dialog, this);
+        dialog.setVisible(true);
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {

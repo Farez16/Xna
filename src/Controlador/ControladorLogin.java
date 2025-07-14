@@ -56,6 +56,7 @@ public class ControladorLogin implements ActionListener {
                 }
             } else {
                 vista.mostrarMensaje("No existe una cuenta con ese correo. Por favor, crea una cuenta.");
+                vista.resaltarBotonCrearCuenta();
             }
         } catch (SQLException ex) {
             vista.mostrarMensaje("Error al conectar con la base de datos: " + ex.getMessage());
@@ -64,15 +65,7 @@ public class ControladorLogin implements ActionListener {
 
     private void abrirPanelRegistro() {
         String correo = vista.getTxtUsuario().getText().trim();
-        ContrasenaNueva panelCambio = new ContrasenaNueva(correo);
-        JDialog dialog = new JDialog(vista, "Registrar nueva cuenta", true);
-        dialog.setContentPane(panelCambio);
-        dialog.pack();
-        dialog.setLocationRelativeTo(vista);
-
-        new ControladorContrasenaNueva(panelCambio, correo, dialog, vista);
-
-        dialog.setVisible(true);
+        vista.abrirPanelRegistro(correo);
     }
 
     private void abrirDashboard(String correo) {
