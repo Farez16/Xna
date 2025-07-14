@@ -17,12 +17,14 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.Timer;
 
 public class ControladorDashboard {
 
     private final Dashboard vista;
     private final Login loginFrame;
     private ControladorSaludo controladorSaludo;
+    private Timer timer;
 
     private final Vista_PanelUnidades panelUnidades;
     private final Controlador_Unidades controladorUnidades;
@@ -49,6 +51,7 @@ public class ControladorDashboard {
 
         cargarDatosUsuario(vista.getCorreoUsuario());
         cargarImagenUsuario();
+        iniciarTimerSaludo();
     }
 
     public Connection getConnection() {
@@ -64,8 +67,8 @@ public class ControladorDashboard {
         vista.getBtnSalir().addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(null, "¿Deseas salir?", "Cerrar sesión", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                if (controladorSaludo != null) {
-                    controladorSaludo.detener();
+                if (timer != null) {
+                    timer.stop();
                 }
                 loginFrame.mostrarPanelEnPanel1(loginFrame.getPanelLoginOriginal());
                 loginFrame.limpiarCampos();
@@ -90,14 +93,14 @@ public class ControladorDashboard {
     private void abrirVistaJuego() {
         VistaJuego va = new VistaJuego();
         Juego modeloJuego = new Juego(conn);
-        ControladorJuego controlador = new ControladorJuego(va, modeloJuego);
+        new ControladorJuego(va, modeloJuego);
         vista.mostrarVista(va);
     }
 
-    public void limpiarControladorSaludo() {
+    private void iniciarTimerSaludo() {
         if (controladorSaludo != null) {
-            controladorSaludo.detener();
-            controladorSaludo = null;
+            timer = new Timer(10000, e -> controladorSaludo.actualizarSaludo());
+            timer.start();
         }
     }
 
@@ -109,7 +112,7 @@ public class ControladorDashboard {
                 vista.setRolUsuario(datos[1]);
             }
             if (controladorSaludo != null) {
-                controladorSaludo.detener();
+                timer.stop();
             }
             Saludo saludo = new Saludo("Bienvenido");
             controladorSaludo = new ControladorSaludo(

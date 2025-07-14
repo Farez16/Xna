@@ -1,54 +1,61 @@
 package Vista;
 
-import java.awt.Color;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 public class ContrasenaNueva extends javax.swing.JPanel {
 
-    private String correoUsuario;
-
     public ContrasenaNueva() {
         initComponents();
-        camposIngresarCorreo();
-        camposIngresarCodigo();
-        nuevaContrasena();
-        confirmarContrasena();
-        nombre();
-        bloquearCamposRegistro();
-        SwingUtilities.invokeLater(() -> jLabel2.requestFocusInWindow());
     }
 
-    public ContrasenaNueva(String correoUsuario) {
-        initComponents();
-        this.correoUsuario = correoUsuario;
-        camposIngresarCorreo();
-        camposIngresarCodigo();
-        nuevaContrasena();
-        confirmarContrasena();
-        nombre();
-        SwingUtilities.invokeLater(() -> {
-            jLabel2.requestFocusInWindow();
-        });
+    public JButton getBtnEnviarCodigo() {
+        return jButton1REnviarCodigo1;
     }
 
-    // --- GETTERS ---
-public JButton getBtnEnviarCodigo() { return jButton1REnviarCodigo1; }
-public JButton getBtnVerificarCodigo() { return jButton1VerificarCodigo; }
-public JButton getBtnGuardarContraseña() { return btnGuardarContraseña; }
-public JTextField getTextFieldIngresarCorreo() { return TextFieldIngresarCorreo; }
-public JTextField getTextFieldIngresarCodigoRecibido() { return TextFieldIngresarCodigoRecibido1; }
-public JTextField getTextFieldIngresarNuevaContraseña() { return TextFieldIngresarNuevaContraseña; }
-public JTextField getTextFieldConfirmarContraseña() { return TextFieldConfirmarContraseña; }
-public JTextField getTxtNombre() { return TxtNombre; }
+    public JButton getBtnVerificarCodigo() {
+        return jButton1VerificarCodigo;
+    }
 
+    public JButton getBtnGuardarContraseña() {
+        return btnGuardarContraseña;
+    }
 
+    public JTextField getTextFieldIngresarCorreo() {
+        return TextFieldIngresarCorreo;
+    }
+
+    public JTextField getTextFieldIngresarCodigoRecibido() {
+        return TextFieldIngresarCodigoRecibido1;
+    }
+
+    public JTextField getTextFieldIngresarNuevaContraseña() {
+        return TextFieldIngresarNuevaContraseña;
+    }
+
+    public JTextField getTextFieldConfirmarContraseña() {
+        return TextFieldConfirmarContraseña;
+    }
+
+    public JTextField getTxtNombre() {
+        return TxtNombre;
+    }
+
+    public void bloquearCamposRegistro() {
+        TextFieldIngresarNuevaContraseña.setEnabled(false);
+        TextFieldConfirmarContraseña.setEnabled(false);
+        TxtNombre.setEnabled(false);
+    }
+
+    public void desbloquearCamposRegistro() {
+        TextFieldIngresarNuevaContraseña.setEnabled(true);
+        TextFieldConfirmarContraseña.setEnabled(true);
+        TxtNombre.setEnabled(true);
+    }
 
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
@@ -80,11 +87,6 @@ public JTextField getTxtNombre() { return TxtNombre; }
         jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 390, 180, 40));
 
         btnGuardarContraseña.setBackground(new java.awt.Color(171, 52, 2));
-        btnGuardarContraseña.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGuardarContraseñaActionPerformed(evt);
-            }
-        });
         jPanel2.add(btnGuardarContraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 390, 180, 40));
 
         TxtNombre.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -135,132 +137,18 @@ public JTextField getTxtNombre() { return TxtNombre; }
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 507, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 507, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
         );
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>
 
-    private void btnGuardarContraseñaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarContraseñaActionPerformed
-
-    }//GEN-LAST:event_btnGuardarContraseñaActionPerformed
-
-        private void camposIngresarCorreo() {
-        TextFieldIngresarCorreo.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (TextFieldIngresarCorreo.getText().equals("Correo")) {
-                    TextFieldIngresarCorreo.setText("");
-                    TextFieldIngresarCorreo.setForeground(Color.BLACK);
-                }
-            }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                if (TextFieldIngresarCorreo.getText().isEmpty()) {
-                    TextFieldIngresarCorreo.setText("Correo");
-                    TextFieldIngresarCorreo.setForeground(new Color(187, 187, 187));
-                }
-            }
-        });
-    }
-
-    private void camposIngresarCodigo() {
-        TextFieldIngresarCodigoRecibido1.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (TextFieldIngresarCodigoRecibido1.getText().equals("Codigo Recibido")) {
-                    TextFieldIngresarCodigoRecibido1.setText("");
-                    TextFieldIngresarCodigoRecibido1.setForeground(Color.BLACK);
-                }
-            }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                if (TextFieldIngresarCodigoRecibido1.getText().isEmpty()) {
-                    TextFieldIngresarCodigoRecibido1.setText("Codigo Recibido");
-                    TextFieldIngresarCodigoRecibido1.setForeground(new Color(187, 187, 187));
-                }
-            }
-        });
-    }
-
-    private void nuevaContrasena() {
-        TextFieldIngresarNuevaContraseña.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (TextFieldIngresarNuevaContraseña.getText().equals("Nueva Contraseña")) {
-                    TextFieldIngresarNuevaContraseña.setText("");
-                    TextFieldIngresarNuevaContraseña.setForeground(Color.BLACK);
-                }
-            }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                if (TextFieldIngresarNuevaContraseña.getText().isEmpty()) {
-                    TextFieldIngresarNuevaContraseña.setText("Nueva Contraseña");
-                    TextFieldIngresarNuevaContraseña.setForeground(new Color(187, 187, 187));
-                }
-            }
-        });
-    }
-
-    private void confirmarContrasena() {
-        TextFieldConfirmarContraseña.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (TextFieldConfirmarContraseña.getText().equals("Confirmar Contraseña")) {
-                    TextFieldConfirmarContraseña.setText("");
-                    TextFieldConfirmarContraseña.setForeground(Color.BLACK);
-                }
-            }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                if (TextFieldConfirmarContraseña.getText().isEmpty()) {
-                    TextFieldConfirmarContraseña.setText("Confirmar Contraseña");
-                    TextFieldConfirmarContraseña.setForeground(new Color(187, 187, 187));
-                }
-            }
-        });
-    }
-
-    private void nombre() {
-        TxtNombre.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (TxtNombre.getText().equals("Nombre de Usuario")) {
-                    TxtNombre.setText("");
-                    TxtNombre.setForeground(Color.BLACK);
-                }
-            }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                if (TxtNombre.getText().isEmpty()) {
-                    TxtNombre.setText("Nombre de Usuario");
-                    TxtNombre.setForeground(new Color(187, 187, 187));
-                }
-            }
-        });
-    }
-
-    // --- BLOQUEAR Y DESBLOQUEAR CAMPOS ---
-    public void bloquearCamposRegistro() {
-        TextFieldIngresarNuevaContraseña.setEnabled(false);
-        TextFieldConfirmarContraseña.setEnabled(false);
-        TxtNombre.setEnabled(false);
-    }
-
-    public void desbloquearCamposRegistro() {
-        TextFieldIngresarNuevaContraseña.setEnabled(true);
-        TextFieldConfirmarContraseña.setEnabled(true);
-        TxtNombre.setEnabled(true);
-    }
-
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify
     public javax.swing.JLabel LblLogo;
     public javax.swing.JLabel LblNombreProyecto;
     public javax.swing.JTextField TextFieldConfirmarContraseña;
@@ -275,5 +163,5 @@ public JTextField getTxtNombre() { return TxtNombre; }
     public javax.swing.JLabel jLabel2;
     public javax.swing.JPanel jPanel1;
     public javax.swing.JPanel jPanel2;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration
 }

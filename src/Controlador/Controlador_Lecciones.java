@@ -33,6 +33,7 @@ public class Controlador_Lecciones {
     private ImageIcon imagen2Original;
     private final Controlador_Unidades controladorUnidades;
     private final Usuario usuario;
+    private final ControladorProgresoUsuario controladorProgresoUsuario;
 
     public static final int LECCION_SALUDOS = 1;
     public static final int LECCION_FONOLOGIA = 2;
@@ -44,6 +45,7 @@ public class Controlador_Lecciones {
         this.controladorDashboard = controladorDashboard;
         this.conn = conn;
         this.usuario = new Usuario(conn);
+        this.controladorProgresoUsuario = new ControladorProgresoUsuario();
 
         if (correo == null || correo.trim().isEmpty()) {
             throw new IllegalArgumentException("El correo no puede ser nulo o vacío");
@@ -149,7 +151,7 @@ public class Controlador_Lecciones {
 
     private void completarLeccion() {
         try {
-            Modelo_Progreso_Usuario progreso = ControladorProgresoUsuario.obtenerProgreso(idUsuario, ID_UNIDAD);
+            Modelo_Progreso_Usuario progreso = controladorProgresoUsuario.obtenerProgreso(idUsuario, ID_UNIDAD);
 
             if (progreso.getLeccionesCompletadas() >= numeroLeccion) {
                 int respuesta = JOptionPane.showConfirmDialog(
@@ -165,7 +167,7 @@ public class Controlador_Lecciones {
                 }
             }
 
-            boolean actualizado = ControladorProgresoUsuario.actualizarLeccion(progreso, numeroLeccion);
+            boolean actualizado = controladorProgresoUsuario.actualizarLeccion(progreso, numeroLeccion);
 
             if (actualizado || progreso.getLeccionesCompletadas() >= numeroLeccion) {
                 mostrarMensajeExito();
@@ -273,7 +275,7 @@ public class Controlador_Lecciones {
     }
 
     public String obtenerEstadisticasProgreso() {
-        Modelo_Progreso_Usuario progreso = ControladorProgresoUsuario.obtenerProgreso(idUsuario, ID_UNIDAD);
+        Modelo_Progreso_Usuario progreso = controladorProgresoUsuario.obtenerProgreso(idUsuario, ID_UNIDAD);
 
         int totalLecciones = 3;
         int totalActividades = 2;

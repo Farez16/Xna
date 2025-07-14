@@ -5,15 +5,28 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-
 public class VistaJuego extends javax.swing.JPanel {
 
     public VistaJuego() {
         initComponents();
     }
-        public void mostrarMensaje(String mensaje) {
-    JOptionPane.showMessageDialog(this, mensaje);
-}
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje);
+    }
+
+    public int mostrarResultados(String resultados) {
+        return JOptionPane.showOptionDialog(
+                this,
+                resultados,
+                "Resultados",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                new String[]{"🔁 Repetir", "❌ Cancelar"},
+                "🔁 Repetir"
+        );
+    }
 
     public JLabel getLblRespuesta() {
         return LblRespuesta;
@@ -90,10 +103,9 @@ public class VistaJuego extends javax.swing.JPanel {
     public JButton getBtnVerificar() {
         return btnVerificar;
     }
-    
-  
+
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
@@ -123,11 +135,6 @@ public class VistaJuego extends javax.swing.JPanel {
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         btn1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btn1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn1ActionPerformed(evt);
-            }
-        });
         jPanel1.add(btn1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 520, 90, 30));
 
         LblRespuesta.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -162,14 +169,9 @@ public class VistaJuego extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>
 
-    private void btn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btn1ActionPerformed
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify
     public javax.swing.JLabel LblRespuesta;
     public javax.swing.JLabel Lblimagen1;
     public javax.swing.JLabel Lblimagen2;
@@ -189,5 +191,5 @@ public class VistaJuego extends javax.swing.JPanel {
     public javax.swing.JButton btn8;
     public javax.swing.JButton btnVerificar;
     public javax.swing.JPanel jPanel1;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration
 }

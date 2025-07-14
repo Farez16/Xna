@@ -21,6 +21,7 @@ public class Controlador_Actividades {
     private Modelo_Actividades actividad;
     private final Controlador_Unidad1 controladorUnidad1;
     private final Usuario usuario;
+    private final ControladorProgresoUsuario controladorProgresoUsuario;
 
     public Controlador_Actividades(javax.swing.JPanel vista, ControladorDashboard controladorDashboard,
             Connection conn, String correo, int idActividad, Controlador_Unidad1 controladorUnidad1) {
@@ -28,6 +29,7 @@ public class Controlador_Actividades {
         this.controladorDashboard = controladorDashboard;
         this.conn = conn;
         this.usuario = new Usuario(conn);
+        this.controladorProgresoUsuario = new ControladorProgresoUsuario();
 
         if (correo == null || correo.trim().isEmpty()) {
             throw new IllegalArgumentException("El correo no puede ser nulo o vacío");
@@ -112,15 +114,15 @@ public class Controlador_Actividades {
     }
 
     private void completarActividad(int idUsuario) {
-        Modelo_Progreso_Usuario progreso = ControladorProgresoUsuario.obtenerProgreso(idUsuario, actividad.getIdUnidad());
-        boolean actualizado = ControladorProgresoUsuario.actualizarActividad(progreso, idActividad);
+        Modelo_Progreso_Usuario progreso = controladorProgresoUsuario.obtenerProgreso(idUsuario, actividad.getIdUnidad());
+        boolean actualizado = controladorProgresoUsuario.actualizarActividad(progreso, idActividad);
         if (actualizado) {
             System.out.println("Actividad " + idActividad + " completada");
         }
 
         if (controladorUnidad1 != null) {
             controladorUnidad1.actualizarVista();
-            
+
             Vista_Unidad1 vistaUnidad1 = new Vista_Unidad1();
             new Controlador_Unidad1(vistaUnidad1, conn, controladorDashboard, correo,
                     controladorUnidad1.getControladorUnidades());

@@ -22,6 +22,7 @@ public class Controlador_Evaluaciones {
     private final int idUnidad;
     private final Controlador_Unidades controladorUnidades;
     private final Usuario usuario;
+    private final ControladorProgresoUsuario controladorProgresoUsuario;
 
     private List<Modelo_Evaluaciones> preguntas;
     private final List<ButtonGroup> gruposBotones;
@@ -35,6 +36,7 @@ public class Controlador_Evaluaciones {
         this.idUnidad = idUnidad;
         this.controladorUnidades = controladorUnidades;
         this.usuario = new Usuario(conn);
+        this.controladorProgresoUsuario = new ControladorProgresoUsuario();
 
         gruposBotones = new ArrayList<>();
         gruposBotones.add(vista.buttonGroupPregunta1);
@@ -69,8 +71,8 @@ public class Controlador_Evaluaciones {
         vista.jButtonCOMPLETOEVALUACION1.addActionListener(e -> {
             try {
                 int idUsuario = usuario.obtenerIdPorCorreo(correo);
-                Modelo_Progreso_Usuario progreso = ControladorProgresoUsuario.obtenerProgreso(idUsuario, idUnidad);
-                boolean actualizado = ControladorProgresoUsuario.aprobarEvaluacion(progreso, 100);
+                Modelo_Progreso_Usuario progreso = controladorProgresoUsuario.obtenerProgreso(idUsuario, idUnidad);
+                boolean actualizado = controladorProgresoUsuario.aprobarEvaluacion(progreso, 100);
                 if (actualizado) {
                     JOptionPane.showMessageDialog(vista, "Evaluación aprobada. Puedes continuar con la siguiente unidad.");
                     Vista_Unidad1 vistaUnidad1 = new Vista_Unidad1();

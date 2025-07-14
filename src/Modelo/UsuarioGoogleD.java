@@ -10,6 +10,12 @@ import org.json.JSONObject;
 
 public class UsuarioGoogleD {
 
+    private final EmailSender emailSender;
+
+    public UsuarioGoogleD() {
+        this.emailSender = new EmailSender();
+    }
+
     public void registrarOIniciarSesion(String jsonIdentity) {
         JSONObject obj = new JSONObject(jsonIdentity);
         String email = obj.getString("email");
@@ -44,7 +50,7 @@ public class UsuarioGoogleD {
             }
 
             // Enviar correo en ambos casos
-            EmailSender.enviarCorreo(email, asunto, cuerpo);
+            emailSender.enviarCorreo(email, asunto, cuerpo);
             if (!usuario.estaRegistrado(email)) {
                 usuario.actualizarContrasena(email, "temp_password", nombre); // Esto debe usar rol 1 por defecto
             }

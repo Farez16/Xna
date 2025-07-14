@@ -8,6 +8,7 @@ import Vista.ContrasenaNueva;
 import Vista.Dashboard;
 import Vista.DashboardAdmin;
 import Vista.Login;
+import java.awt.Color;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.swing.JDialog;
@@ -20,6 +21,7 @@ public class ControladorContrasenaNueva {
     private final Login login;
     private final Usuario usuario;
     private final Connection conn;
+    private final EmailSender emailSender;
 
     public ControladorContrasenaNueva(ContrasenaNueva vista, String correoUsuario, JDialog dialog, Login login) {
         this.vista = vista;
@@ -27,24 +29,101 @@ public class ControladorContrasenaNueva {
         this.login = login;
         this.conn = Conexion.conectar();
         this.usuario = new Usuario(conn);
+        this.emailSender = new EmailSender();
 
-        bloquearCamposRegistro();
-
+        vista.bloquearCamposRegistro();
         this.vista.getBtnEnviarCodigo().addActionListener(e -> enviarCodigo());
         this.vista.getBtnVerificarCodigo().addActionListener(e -> verificarCodigo());
         this.vista.getBtnGuardarContraseña().addActionListener(e -> guardarContrasena());
+        addFocusListeners();
     }
 
-    private void bloquearCamposRegistro() {
-        vista.getTextFieldIngresarNuevaContraseña().setEnabled(false);
-        vista.getTextFieldConfirmarContraseña().setEnabled(false);
-        vista.getTxtNombre().setEnabled(false);
-    }
+    private void addFocusListeners() {
+        vista.getTextFieldIngresarCorreo().addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (vista.getTextFieldIngresarCorreo().getText().equals("Ingrese Correo")) {
+                    vista.getTextFieldIngresarCorreo().setText("");
+                    vista.getTextFieldIngresarCorreo().setForeground(Color.BLACK);
+                }
+            }
 
-    private void desbloquearCamposRegistro() {
-        vista.getTextFieldIngresarNuevaContraseña().setEnabled(true);
-        vista.getTextFieldConfirmarContraseña().setEnabled(true);
-        vista.getTxtNombre().setEnabled(true);
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (vista.getTextFieldIngresarCorreo().getText().isEmpty()) {
+                    vista.getTextFieldIngresarCorreo().setText("Ingrese Correo");
+                    vista.getTextFieldIngresarCorreo().setForeground(new Color(187, 187, 187));
+                }
+            }
+        });
+        vista.getTextFieldIngresarCodigoRecibido().addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (vista.getTextFieldIngresarCodigoRecibido().getText().equals("Codigo Recibido")) {
+                    vista.getTextFieldIngresarCodigoRecibido().setText("");
+                    vista.getTextFieldIngresarCodigoRecibido().setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (vista.getTextFieldIngresarCodigoRecibido().getText().isEmpty()) {
+                    vista.getTextFieldIngresarCodigoRecibido().setText("Codigo Recibido");
+                    vista.getTextFieldIngresarCodigoRecibido().setForeground(new Color(187, 187, 187));
+                }
+            }
+        });
+        vista.getTextFieldIngresarNuevaContraseña().addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (vista.getTextFieldIngresarNuevaContraseña().getText().equals("Nueva Contraseña")) {
+                    vista.getTextFieldIngresarNuevaContraseña().setText("");
+                    vista.getTextFieldIngresarNuevaContraseña().setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (vista.getTextFieldIngresarNuevaContraseña().getText().isEmpty()) {
+                    vista.getTextFieldIngresarNuevaContraseña().setText("Nueva Contraseña");
+                    vista.getTextFieldIngresarNuevaContraseña().setForeground(new Color(187, 187, 187));
+                }
+            }
+        });
+        vista.getTextFieldConfirmarContraseña().addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (vista.getTextFieldConfirmarContraseña().getText().equals("Confirmar Contraseña")) {
+                    vista.getTextFieldConfirmarContraseña().setText("");
+                    vista.getTextFieldConfirmarContraseña().setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (vista.getTextFieldConfirmarContraseña().getText().isEmpty()) {
+                    vista.getTextFieldConfirmarContraseña().setText("Confirmar Contraseña");
+                    vista.getTextFieldConfirmarContraseña().setForeground(new Color(187, 187, 187));
+                }
+            }
+        });
+        vista.getTxtNombre().addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (vista.getTxtNombre().getText().equals("Nombre de Usuario")) {
+                    vista.getTxtNombre().setText("");
+                    vista.getTxtNombre().setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (vista.getTxtNombre().getText().isEmpty()) {
+                    vista.getTxtNombre().setText("Nombre de Usuario");
+                    vista.getTxtNombre().setForeground(new Color(187, 187, 187));
+                }
+            }
+        });
     }
 
     private void enviarCodigo() {
@@ -58,7 +137,7 @@ public class ControladorContrasenaNueva {
             return;
         }
         String codigo = OTPService.generarYEnviarCodigo(correo);
-        EmailSender.enviarCodigo(correo, codigo);
+        emailSender.enviarCodigo(correo, codigo);
         JOptionPane.showMessageDialog(vista, "Se ha enviado el código al correo.");
     }
 
@@ -80,7 +159,7 @@ public class ControladorContrasenaNueva {
             return;
         }
         JOptionPane.showMessageDialog(vista, "Código correcto. Ahora ingrese su nombre y contraseña.");
-        desbloquearCamposRegistro();
+        vista.desbloquearCamposRegistro();
     }
 
     private void guardarContrasena() {
@@ -111,7 +190,7 @@ public class ControladorContrasenaNueva {
                         + "Correo: " + correoUsuario + "\n"
                         + "Contraseña: " + nuevaContrasena + "\n\n"
                         + "¡Gracias por registrarte en nuestra app!";
-                EmailSender.enviarCorreo(correoUsuario, asunto, mensaje);
+                emailSender.enviarCorreo(correoUsuario, asunto, mensaje);
 
                 JOptionPane.showMessageDialog(vista, "Registro exitoso. Revisa tu correo y disfruta nuestra app.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 dialog.dispose();
@@ -119,11 +198,11 @@ public class ControladorContrasenaNueva {
                 int rol = usuario.obtenerRolUsuario(correoUsuario);
                 if (rol == 2) {
                     DashboardAdmin dashAdmin = new DashboardAdmin(correoUsuario);
-                    ControladorDashboardAdmin controlador = new ControladorDashboardAdmin(dashAdmin, login);
+                    new ControladorDashboardAdmin(dashAdmin, login);
                     login.mostrarPanelEnPanel1(dashAdmin);
                 } else {
                     Dashboard dashPanel = new Dashboard(correoUsuario);
-                    ControladorDashboard controladorDashboard = new ControladorDashboard(dashPanel, login);
+                    new ControladorDashboard(dashPanel, login);
                     login.mostrarPanelEnPanel1(dashPanel);
                 }
             } else {
