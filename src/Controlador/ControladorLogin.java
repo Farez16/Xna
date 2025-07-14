@@ -3,7 +3,6 @@ package Controlador;
 import Conexion.Conexion;
 import Modelo.EmailSender;
 import Modelo.Usuario;
-import Vista.ContrasenaNueva;
 import Vista.Dashboard;
 import Vista.DashboardAdmin;
 import Vista.Login;
@@ -11,18 +10,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.SQLException;
-import javax.swing.JDialog;
 
 public class ControladorLogin implements ActionListener {
 
     private final Login vista;
     private final Usuario usuario;
     private final Connection conn;
+    private final EmailSender emailSender;
 
     public ControladorLogin(Login vista) {
         this.vista = vista;
         this.conn = Conexion.conectar();
         this.usuario = new Usuario(conn);
+        this.emailSender = new EmailSender();
         this.vista.getBtnInicar().addActionListener(this);
         this.vista.getBtnCodigo().addActionListener(this);
     }
@@ -49,7 +49,7 @@ public class ControladorLogin implements ActionListener {
             if (usuario.estaRegistrado(correo)) {
                 if (usuario.verificarContrasena(correo, contrasena)) {
                     vista.mostrarMensaje("Inicio de sesión exitoso");
-                    EmailSender.enviarConfirmacion(correo);
+                    emailSender.enviarConfirmacion(correo);
                     abrirDashboard(correo);
                 } else {
                     vista.mostrarMensaje("Correo o contraseña incorrecta");
@@ -72,13 +72,9 @@ public class ControladorLogin implements ActionListener {
         try {
             int rol = usuario.obtenerRolUsuario(correo);
             if (rol == 2) {
-                DashboardAdmin dashAdmin = new DashboardAdmin(correo);
-                new ControladorDashboardAdmin(dashAdmin, vista);
-                vista.mostrarPanelEnPanel1(dashAdmin);
+                vista.mostrarPanelEnPanel1(new DashboardAdmin(correo));
             } else {
-                Dashboard dash = new Dashboard(correo);
-                new ControladorDashboard(dash, vista);
-                vista.mostrarPanelEnPanel1(dash);
+                vista.mostrarPanelEnPanel1(new Dashboard(correo));
             }
         } catch (SQLException ex) {
             vista.mostrarMensaje("Error al obtener el rol del usuario: " + ex.getMessage());

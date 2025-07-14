@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 public class ControladorProgresoUsuario {
 
-    public static Modelo_Progreso_Usuario obtenerProgreso(int idUsuario, int idUnidad) {
+    public Modelo_Progreso_Usuario obtenerProgreso(int idUsuario, int idUnidad) {
         Modelo_Progreso_Usuario progreso = Modelo_Progreso_Usuario.obtenerProgreso(idUsuario, idUnidad);
         if (progreso == null) {
             progreso = new Modelo_Progreso_Usuario(0, idUsuario, idUnidad, 0, 0, false, 0, LocalDateTime.now());
@@ -14,7 +14,7 @@ public class ControladorProgresoUsuario {
         return progreso;
     }
 
-    public static boolean actualizarLeccion(Modelo_Progreso_Usuario progreso, int nuevaCantidad) {
+    public boolean actualizarLeccion(Modelo_Progreso_Usuario progreso, int nuevaCantidad) {
         if (progreso.getLeccionesCompletadas() < nuevaCantidad) {
             progreso.setLeccionesCompletadas(nuevaCantidad);
             progreso.setFechaActualizacion(LocalDateTime.now());
@@ -23,7 +23,7 @@ public class ControladorProgresoUsuario {
         return false;
     }
 
-    public static boolean actualizarActividad(Modelo_Progreso_Usuario progreso, int nuevaCantidad) {
+    public boolean actualizarActividad(Modelo_Progreso_Usuario progreso, int nuevaCantidad) {
         if (progreso.getActividadesCompletadas() < nuevaCantidad) {
             progreso.setActividadesCompletadas(nuevaCantidad);
             progreso.setFechaActualizacion(LocalDateTime.now());
@@ -32,7 +32,7 @@ public class ControladorProgresoUsuario {
         return false;
     }
 
-    public static boolean aprobarEvaluacion(Modelo_Progreso_Usuario progreso, int calificacion) {
+    public boolean aprobarEvaluacion(Modelo_Progreso_Usuario progreso, int calificacion) {
         if (!progreso.isEvaluacionAprobada()) {
             progreso.setEvaluacionAprobada(true);
             progreso.setCalificacion(calificacion);
@@ -42,7 +42,7 @@ public class ControladorProgresoUsuario {
         return false;
     }
 
-    public static int calcularProgreso(int lecciones, int actividades, boolean evaluacion) {
+    public int calcularProgreso(int lecciones, int actividades, boolean evaluacion) {
         int progreso = 0;
         if (lecciones >= 1) progreso = 15;
         if (lecciones >= 2) progreso = 30;

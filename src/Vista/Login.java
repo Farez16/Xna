@@ -109,7 +109,7 @@ public class Login extends javax.swing.JFrame {
     }
 
     public void abrirPanelRegistro(String correo) {
-        ContrasenaNueva panelCambio = new ContrasenaNueva(correo);
+        ContrasenaNueva panelCambio = new ContrasenaNueva();
         javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Registrar nueva cuenta", true);
         dialog.setContentPane(panelCambio);
         dialog.pack();

@@ -1,19 +1,25 @@
 package Vista;
 
+import Controlador.ControladorBotones;
+import Modelo.TextoBotones;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class Dashboard extends javax.swing.JPanel {
 
     private String correoUsuario;
+    private final ControladorBotones controladorBotones;
 
     public Dashboard(String correoUsuario) {
         initComponents();
@@ -37,6 +43,20 @@ public class Dashboard extends javax.swing.JPanel {
         btnSalir.setOpaque(false);
         btnSalir.setContentAreaFilled(false);
         btnSalir.setBorderPainted(false);
+
+        Map<String, JButton> botonesMap = new HashMap<>();
+        botonesMap.put("btnDashboard", btnDashboard);
+        botonesMap.put("btnCuenta", btnCuenta);
+        botonesMap.put("btnCertificado", btnCertificado);
+        botonesMap.put("btnJuegos", btnJuegos);
+        botonesMap.put("btnSalir", btnSalir);
+
+        TextoBotones modeloTextos = new TextoBotones();
+        controladorBotones = new ControladorBotones(botonesMap, modeloTextos);
+        controladorBotones.iniciar();
+
+        Timer timer = new Timer(10000, e -> controladorBotones.actualizarTextos());
+        timer.start();
     }
 
     public String getCorreoUsuario() {

@@ -9,57 +9,53 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ControladorMostrar {
-    private VistaMostrarAdmin vista;
-    private MostrarDatosAdmin modelo;
+    private final VistaMostrarAdmin vista;
+    private final MostrarDatosAdmin modelo;
 
     public ControladorMostrar(VistaMostrarAdmin vista, MostrarDatosAdmin modelo) {
         this.vista = vista;
         this.modelo = modelo;
-        
-        // Mostrar todos los usuarios al iniciar
+
         cargarUsuariosEnTabla("");
-            this.vista.btnBuscar.addActionListener(new ActionListener() {
+        this.vista.getBtnBuscar().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String correo = vista.TxtBuscar.getText().trim();
+                String correo = vista.getTxtBuscar().getText().trim();
                 cargarUsuariosEnTabla(correo);
             }
         });
     }
 
-   public void cargarUsuariosEnTabla(String correo) {
-    try {
-        ResultSet rs;
-        
-        if (correo.isEmpty()) {
-            // Obtener solo usuarios con rol 2
-            rs = modelo.obtenerUsuariosRol1();
-        } else {
-            // Buscar por correo y que tenga rol 2
-            rs = modelo.buscarUsuariosRol1PorCorreo(correo);
-        }
-        
-        String[] columnas = {"Nombre", "ID", "Correo", "Registro"};
-        DefaultTableModel modeloTabla = new DefaultTableModel(columnas, 0);
-        vista.getTablaDatos().setModel(modeloTabla);
+    public void cargarUsuariosEnTabla(String correo) {
+        try {
+            ResultSet rs;
 
-        while (rs != null && rs.next()) {
-            Object[] fila = {
-                rs.getString("nombre"),
-                rs.getString("id_usuario"),
-                rs.getString("correo"),
-                rs.getString("fecha_registro")
-            };
-            modeloTabla.addRow(fila);
+            if (correo.isEmpty()) {
+                rs = modelo.obtenerUsuariosRol1();
+            } else {
+                rs = modelo.buscarUsuariosRol1PorCorreo(correo);
+            }
+
+            String[] columnas = {"Nombre", "ID", "Correo", "Registro"};
+            DefaultTableModel modeloTabla = new DefaultTableModel(columnas, 0);
+            vista.getTablaDatos().setModel(modeloTabla);
+
+            while (rs != null && rs.next()) {
+                Object[] fila = {
+                        rs.getString("nombre"),
+                        rs.getString("id_usuario"),
+                        rs.getString("correo"),
+                        rs.getString("fecha_registro")
+                };
+                modeloTabla.addRow(fila);
+            }
+
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            vista.mostrarMensaje("Error al llenar tabla: " + e.getMessage());
         }
-        
-        if (rs != null) {
-            rs.close();
-        }
-    } catch (SQLException e) {
-        System.out.println("Error al llenar tabla: " + e.getMessage());
-        e.printStackTrace();
     }
-}
 }
 

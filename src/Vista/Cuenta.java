@@ -1,199 +1,157 @@
 package Vista;
 
+import java.awt.Graphics2D;
+import java.awt.MediaTracker;
+import java.awt.RenderingHints;
+import java.awt.event.ActionListener;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class Cuenta extends JPanel {
 
-    public javax.swing.JButton jButton2SubirURL;
-    public JLabel labelCorreoUsuario;
-    public JLabel labelImagenPerfil;
-    public JButton btnSubirImagenArchivo;
-    public JButton btnSubirImagenURL;
-    public JLabel labelFechaHoraActual;
-    public JLabel labelFechaRegistro;
-    public JLabel labelUltimoAcceso;
-
     public Cuenta() {
         initComponents();
     }
 
-    public JLabel getLabelCorreoUsuario() {
-        return labelCorreoUsuario;
+    public void setUsuario(String usuario) {
+        if (jTextField1MostrarUsuario != null) {
+            jTextField1MostrarUsuario.setText(usuario);
+            jTextField1MostrarUsuario.setEditable(false);
+        }
     }
 
-    public JLabel getLabelImagenPerfil() {
-        return labelImagenPerfil;
+    public void setContrasena(String contrasena) {
+        if (jTextField1Contraseña1 != null) {
+            jTextField1Contraseña1.setText(contrasena);
+            jTextField1Contraseña1.setEditable(false);
+        }
     }
 
-    public JButton getBtnSubirImagenArchivo() {
-        return btnSubirImagenArchivo;
+    public void setFechaHora(String fechaHora) {
+        if (jLabel1FechayHora1 != null) {
+            jLabel1FechayHora1.setText(fechaHora);
+        }
     }
 
-    public JButton getBtnSubirImagenURL() {
-        return btnSubirImagenURL;
+    public void setFechaRegistro(String fechaRegistro) {
+        if (jLabel1loginactivity != null) {
+            jLabel1loginactivity.setText(fechaRegistro);
+        }
     }
 
-    public JLabel getLabelFechaHoraActual() {
-        return labelFechaHoraActual;
+    public void setUltimoAcceso(String ultimoAcceso) {
+        if (jLabel1loginactivity != null) {
+            jLabel1loginactivity.setText(jLabel1loginactivity.getText() + ultimoAcceso);
+        }
     }
 
-    public JLabel getLabelFechaRegistro() {
-        return labelFechaRegistro;
+    public void mostrarImagen(String ruta) {
+        try {
+            if (Lblimagen == null) {
+                return;
+            }
+
+            if (ruta == null || ruta.isEmpty()) {
+                cargarImagenPorDefecto();
+                return;
+            }
+
+            BufferedImage img;
+            if (ruta.startsWith("http")) {
+                img = ImageIO.read(new java.net.URL(ruta));
+            } else {
+                img = ImageIO.read(new java.io.File(ruta));
+            }
+
+            BufferedImage circleBuffer = crearImagenCircular(img);
+            Lblimagen.setIcon(new ImageIcon(circleBuffer));
+
+        } catch (Exception ex) {
+            System.err.println("Error al mostrar imagen: " + ex.getMessage());
+            cargarImagenPorDefecto();
+        }
     }
 
-    public JLabel getLabelUltimoAcceso() {
-        return labelUltimoAcceso;
+    private BufferedImage crearImagenCircular(BufferedImage img) {
+        int size = 120;
+        BufferedImage circleBuffer = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = circleBuffer.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Ellipse2D.Double circle = new Ellipse2D.Double(0, 0, size, size);
+        g2.setClip(circle);
+        g2.drawImage(img, 0, 0, size, size, null);
+        g2.dispose();
+        return circleBuffer;
     }
 
-    public JLabel getLabelPerfildelUsuario() {
-        return LabelPerfildelUsuario;
+    private void cargarImagenPorDefecto() {
+        try {
+            if (Lblimagen == null) {
+                return;
+            }
+
+            ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/Imagenes/Users.png"));
+            if (defaultIcon.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                return;
+            }
+
+            BufferedImage buffered = new BufferedImage(120, 120, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = buffered.createGraphics();
+            defaultIcon.paintIcon(null, g2, 0, 0);
+            g2.dispose();
+
+            BufferedImage circleBuffer = crearImagenCircular(buffered);
+            Lblimagen.setIcon(new ImageIcon(circleBuffer));
+        } catch (Exception e) {
+            System.err.println("Error cargando imagen por defecto: " + e.getMessage());
+        }
     }
 
-    public JLabel getLblSaludo() {
-        return LblSaludo;
+    public void onSubirImagen(ActionListener listener) {
+        jButton1SubirImagen.addActionListener(listener);
     }
 
-    public JLabel getLblimagen() {
-        return Lblimagen;
+    public void onCambiarContrasena(ActionListener listener) {
+        jButton1CambiarContraseña.addActionListener(listener);
     }
 
-    public JPanel getPanelVistas() {
-        return PanelVistas;
+    public int mostrarMenuSubirImagen() {
+        Object[] opciones = {"Subir archivo local", "Ingresar URL de imagen"};
+        return JOptionPane.showOptionDialog(
+                this,
+                "Seleccione cómo desea subir la imagen",
+                "Subir imagen de perfil",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                opciones,
+                opciones[0]
+        );
     }
 
-    public JButton getjButton1CambiarContraseña() {
-        return jButton1CambiarContraseña;
+    public String ingresarURLImagen() {
+        return JOptionPane.showInputDialog(this, "Ingrese la URL de la imagen:");
     }
 
-    public JButton getjButton1Miscertificados() {
-        return jButton1Miscertificados;
+    public String ingresarNuevaContrasena() {
+        return JOptionPane.showInputDialog(this, "Ingrese nueva contraseña (mínimo 6 caracteres):");
     }
 
-    public JButton getjButton1SubirImagen() {
-        return jButton1SubirImagen;
-    }
-
-    public JLabel getjLabel1Contra1() {
-        return jLabel1Contra1;
-    }
-
-    public JLabel getjLabel1FechayHora1() {
-        return jLabel1FechayHora1;
-    }
-
-    public JLabel getjLabel1Usuario() {
-        return jLabel1Usuario;
-    }
-
-    public JLabel getjLabel1loginactivity() {
-        return jLabel1loginactivity;
-    }
-
-    public JLabel getjLabelMisCertificados() {
-        return jLabelMisCertificados;
-    }
-
-    public JPanel getjPanel1() {
-        return jPanel1;
-    }
-
-    public JTextField getjTextField1Contraseña1() {
-        return jTextField1Contraseña1;
-    }
-
-    public JTextField getjTextField1MostrarUsuario() {
-        return jTextField1MostrarUsuario;
-    }
-
-    public void setLabelCorreoUsuario(JLabel labelCorreoUsuario) {
-        this.labelCorreoUsuario = labelCorreoUsuario;
-    }
-
-    public void setLabelImagenPerfil(JLabel labelImagenPerfil) {
-        this.labelImagenPerfil = labelImagenPerfil;
-    }
-
-    public void setBtnSubirImagenArchivo(JButton btnSubirImagenArchivo) {
-        this.btnSubirImagenArchivo = btnSubirImagenArchivo;
-    }
-
-    public void setBtnSubirImagenURL(JButton btnSubirImagenURL) {
-        this.btnSubirImagenURL = btnSubirImagenURL;
-    }
-
-    public void setLabelFechaHoraActual(JLabel labelFechaHoraActual) {
-        this.labelFechaHoraActual = labelFechaHoraActual;
-    }
-
-    public void setLabelFechaRegistro(JLabel labelFechaRegistro) {
-        this.labelFechaRegistro = labelFechaRegistro;
-    }
-
-    public void setLabelUltimoAcceso(JLabel labelUltimoAcceso) {
-        this.labelUltimoAcceso = labelUltimoAcceso;
-    }
-
-    public void setLabelPerfildelUsuario(JLabel LabelPerfildelUsuario) {
-        this.LabelPerfildelUsuario = LabelPerfildelUsuario;
-    }
-
-    public void setLblSaludo(JLabel LblSaludo) {
-        this.LblSaludo = LblSaludo;
-    }
-
-    public void setLblimagen(JLabel Lblimagen) {
-        this.Lblimagen = Lblimagen;
-    }
-
-    public void setjButton1CambiarContraseña(JButton jButton1CambiarContraseña) {
-        this.jButton1CambiarContraseña = jButton1CambiarContraseña;
-    }
-
-    public void setjButton1Miscertificados(JButton jButton1Miscertificados) {
-        this.jButton1Miscertificados = jButton1Miscertificados;
-    }
-
-    public void setjButton1SubirImagen(JButton jButton1SubirImagen) {
-        this.jButton1SubirImagen = jButton1SubirImagen;
-    }
-
-    public void setjLabel1Contra1(JLabel jLabel1Contra1) {
-        this.jLabel1Contra1 = jLabel1Contra1;
-    }
-
-    public void setjLabel1FechayHora1(JLabel jLabel1FechayHora1) {
-        this.jLabel1FechayHora1 = jLabel1FechayHora1;
-    }
-
-    public void setjLabel1Usuario(JLabel jLabel1Usuario) {
-        this.jLabel1Usuario = jLabel1Usuario;
-    }
-
-    public void setjLabel1loginactivity(JLabel jLabel1loginactivity) {
-        this.jLabel1loginactivity = jLabel1loginactivity;
-    }
-
-    public void setjLabelMisCertificados(JLabel jLabelMisCertificados) {
-        this.jLabelMisCertificados = jLabelMisCertificados;
-    }
-
-    public void setjPanel1(JPanel jPanel1) {
-        this.jPanel1 = jPanel1;
-    }
-
-    public void setjTextField1Contraseña1(JTextField jTextField1Contraseña1) {
-        this.jTextField1Contraseña1 = jTextField1Contraseña1;
-    }
-
-    public void setjTextField1MostrarUsuario(JTextField jTextField1MostrarUsuario) {
-        this.jTextField1MostrarUsuario = jTextField1MostrarUsuario;
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje);
     }
 
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
@@ -231,11 +189,6 @@ public class Cuenta extends JPanel {
         jButton1SubirImagen.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton1SubirImagen.setText("Subir Imagen");
         jButton1SubirImagen.setBorder(null);
-        jButton1SubirImagen.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1SubirImagenActionPerformed(evt);
-            }
-        });
         PanelVistas.add(jButton1SubirImagen, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 150, -1, -1));
 
         jButton1CambiarContraseña.setText("Cambiar Contraseña");
@@ -288,14 +241,9 @@ public class Cuenta extends JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>
 
-    private void jButton1SubirImagenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1SubirImagenActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1SubirImagenActionPerformed
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify
     public javax.swing.JLabel LabelPerfildelUsuario;
     public javax.swing.JLabel LblSaludo;
     public javax.swing.JLabel Lblimagen;
@@ -312,5 +260,5 @@ public class Cuenta extends JPanel {
     public javax.swing.JPanel jPanel1;
     public javax.swing.JTextField jTextField1Contraseña1;
     public javax.swing.JTextField jTextField1MostrarUsuario;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration
 }

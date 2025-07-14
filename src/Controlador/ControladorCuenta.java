@@ -7,10 +7,6 @@ import Modelo.UsuarioPerfil;
 import Vista.Cuenta;
 import Vista.Dashboard;
 import Vista.DashboardAdmin;
-import java.awt.Graphics2D;
-import java.awt.MediaTracker;
-import java.awt.RenderingHints;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
@@ -24,9 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
 public class ControladorCuenta {
 
@@ -37,6 +31,7 @@ public class ControladorCuenta {
     private final String correoUsuario;
     private final Dashboard dashboard;
     private final DashboardAdmin dashboardAdmin;
+    private final EmailSender emailSender;
 
     public ControladorCuenta(Cuenta vista, String correo, Dashboard dashboard) {
         this.vista = vista;
@@ -45,6 +40,7 @@ public class ControladorCuenta {
         this.correoUsuario = correo;
         this.dashboard = dashboard;
         this.dashboardAdmin = null;
+        this.emailSender = new EmailSender();
         cargarDatosUsuario(correo);
         inicializarEventos();
     }
@@ -56,6 +52,7 @@ public class ControladorCuenta {
         this.correoUsuario = correo;
         this.dashboardAdmin = dashboardAdmin;
         this.dashboard = null;
+        this.emailSender = new EmailSender();
         cargarDatosUsuario(correo);
         inicializarEventos();
     }
@@ -64,7 +61,7 @@ public class ControladorCuenta {
         try {
             PreparedStatement ps = conn.prepareStatement(
                     "SELECT correo, ruta_imagen, fecha_registro, ultima_sesion "
-                    + "FROM usuarios WHERE correo = ?"
+                            + "FROM usuarios WHERE correo = ?"
             );
             ps.setString(1, correo);
             ResultSet rs = ps.executeQuery();
@@ -77,132 +74,34 @@ public class ControladorCuenta {
                         rs.getTimestamp("ultima_sesion")
                 );
 
-                if (vista.jTextField1MostrarUsuario != null) {
-                    vista.jTextField1MostrarUsuario.setText(usuario.getCorreo());
-                    vista.jTextField1MostrarUsuario.setEditable(false);
-                }
-
-                if (vista.jTextField1Contraseña1 != null) {
-                    vista.jTextField1Contraseña1.setText("********");
-                    vista.jTextField1Contraseña1.setEditable(false);
-                }
-
+                vista.setUsuario(usuario.getCorreo());
+                vista.setContrasena("********");
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-                if (vista.jLabel1FechayHora1 != null) {
-                    vista.jLabel1FechayHora1.setText(dtf.format(LocalDateTime.now()));
-                }
-
+                vista.setFechaHora(dtf.format(LocalDateTime.now()));
                 Timestamp registro = usuario.getFechaRegistro();
-
-                if (vista.jLabel1loginactivity != null) {
-                    vista.jLabel1loginactivity.setText(new SimpleDateFormat("dd/MM/yyyy").format(registro));
-                }
-
+                vista.setFechaRegistro(new SimpleDateFormat("dd/MM/yyyy").format(registro));
                 Timestamp ultimoAcceso = usuario.getUltimaSesion();
-                if (ultimoAcceso != null && vista.jLabel1loginactivity != null) {
+                if (ultimoAcceso != null) {
                     LocalDateTime ldt = ultimoAcceso.toInstant()
                             .atZone(ZoneId.systemDefault())
                             .toLocalDateTime();
-                    vista.jLabel1loginactivity.setText(vista.jLabel1loginactivity.getText()
-                            + " | Último acceso: " + dtf.format(ldt));
+                    vista.setUltimoAcceso(" | Último acceso: " + dtf.format(ldt));
                 }
 
-                mostrarImagen(usuario.getRutaImagen());
+                vista.mostrarImagen(usuario.getRutaImagen());
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(vista, "Error al cargar datos: " + e.getMessage());
-        }
-    }
-
-    private void mostrarImagen(String ruta) {
-        try {
-            if (vista.Lblimagen == null) {
-                return;
-            }
-
-            if (ruta == null || ruta.isEmpty()) {
-                cargarImagenPorDefecto();
-                return;
-            }
-
-            BufferedImage img;
-            if (ruta.startsWith("http")) {
-                img = ImageIO.read(new URL(ruta));
-            } else {
-                img = ImageIO.read(new File(ruta));
-            }
-
-            BufferedImage circleBuffer = crearImagenCircular(img);
-            vista.Lblimagen.setIcon(new ImageIcon(circleBuffer));
-
-        } catch (Exception ex) {
-            System.err.println("Error al mostrar imagen: " + ex.getMessage());
-            cargarImagenPorDefecto();
-        }
-    }
-
-    private BufferedImage crearImagenCircular(BufferedImage img) {
-        int size = 120;
-        BufferedImage circleBuffer = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = circleBuffer.createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        Ellipse2D.Double circle = new Ellipse2D.Double(0, 0, size, size);
-        g2.setClip(circle);
-        g2.drawImage(img, 0, 0, size, size, null);
-        g2.dispose();
-        return circleBuffer;
-    }
-
-    private void cargarImagenPorDefecto() {
-        try {
-            if (vista.Lblimagen == null) {
-                return;
-            }
-
-            ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/Imagenes/Users.png"));
-            if (defaultIcon.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                return;
-            }
-
-            BufferedImage buffered = new BufferedImage(120, 120, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = buffered.createGraphics();
-            defaultIcon.paintIcon(null, g2, 0, 0);
-            g2.dispose();
-
-            BufferedImage circleBuffer = crearImagenCircular(buffered);
-            vista.Lblimagen.setIcon(new ImageIcon(circleBuffer));
-        } catch (Exception e) {
-            System.err.println("Error cargando imagen por defecto: " + e.getMessage());
+            vista.mostrarMensaje("Error al cargar datos: " + e.getMessage());
         }
     }
 
     private void inicializarEventos() {
-        if (vista.jButton1SubirImagen != null) {
-            vista.jButton1SubirImagen.addActionListener(e -> mostrarMenuSubirImagen());
-        }
-
-        if (vista.jButton1CambiarContraseña != null) {
-            vista.jButton1CambiarContraseña.addActionListener(e -> cambiarContraseña());
-        }
+        vista.onSubirImagen(e -> mostrarMenuSubirImagen());
+        vista.onCambiarContrasena(e -> cambiarContraseña());
     }
 
     private void mostrarMenuSubirImagen() {
-        Object[] opciones = {"Subir archivo local", "Ingresar URL de imagen"};
-        int eleccion = JOptionPane.showOptionDialog(
-                vista,
-                "Seleccione cómo desea subir la imagen",
-                "Subir imagen de perfil",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                opciones,
-                opciones[0]
-        );
-
+        int eleccion = vista.mostrarMenuSubirImagen();
         if (eleccion == 0) {
             seleccionarImagenArchivo();
         } else if (eleccion == 1) {
@@ -224,7 +123,7 @@ public class ControladorCuenta {
     }
 
     private void ingresarURLImagen() {
-        String url = JOptionPane.showInputDialog(vista, "Ingrese la URL de la imagen:");
+        String url = vista.ingresarURLImagen();
         if (url != null && !url.trim().isEmpty()) {
             actualizarImagen(url);
         }
@@ -234,71 +133,29 @@ public class ControladorCuenta {
         try {
             modeloUsuario.actualizarImagenUsuario(correoUsuario, nuevaRuta);
             usuario.setRutaImagen(nuevaRuta);
-            mostrarImagen(nuevaRuta);
+            vista.mostrarImagen(nuevaRuta);
 
             if (dashboard != null) {
-                actualizarImagenEnDashboard(nuevaRuta);
+                dashboard.actualizarImagenPerfil(nuevaRuta);
             }
             if (dashboardAdmin != null) {
-                actualizarImagenEnDashboardAdmin(nuevaRuta);
+                dashboardAdmin.actualizarImagenPerfil(nuevaRuta);
             }
 
-            JOptionPane.showMessageDialog(vista,
-                    "¡Imagen actualizada correctamente en todos los paneles!",
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            vista.mostrarMensaje("¡Imagen actualizada correctamente en todos los paneles!");
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(vista,
-                    "Error al actualizar imagen: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void actualizarImagenEnDashboard(String ruta) {
-        try {
-            if (dashboard != null && dashboard.LblimagenPrincipal != null) {
-                BufferedImage img = cargarImagenDesdeRuta(ruta);
-                BufferedImage circleBuffer = crearImagenCircular(img);
-                dashboard.LblimagenPrincipal.setIcon(new ImageIcon(circleBuffer));
-                dashboard.LblimagenPrincipal.revalidate();
-                dashboard.LblimagenPrincipal.repaint();
-            }
-        } catch (Exception ex) {
-            System.err.println("Error actualizando imagen en Dashboard: " + ex.getMessage());
-        }
-    }
-
-    private void actualizarImagenEnDashboardAdmin(String ruta) {
-        try {
-            if (dashboardAdmin != null && dashboardAdmin.LblimagenPrincipal != null) {
-                BufferedImage img = cargarImagenDesdeRuta(ruta);
-                BufferedImage circleBuffer = crearImagenCircular(img);
-                dashboardAdmin.LblimagenPrincipal.setIcon(new ImageIcon(circleBuffer));
-                dashboardAdmin.LblimagenPrincipal.revalidate();
-                dashboardAdmin.LblimagenPrincipal.repaint();
-            }
-        } catch (Exception ex) {
-            System.err.println("Error actualizando imagen en DashboardAdmin: " + ex.getMessage());
-        }
-    }
-
-    private BufferedImage cargarImagenDesdeRuta(String ruta) throws Exception {
-        if (ruta.startsWith("http")) {
-            return ImageIO.read(new URL(ruta));
-        } else {
-            return ImageIO.read(new File(ruta));
+            vista.mostrarMensaje("Error al actualizar imagen: " + e.getMessage());
         }
     }
 
     private void cambiarContraseña() {
-        String nueva = JOptionPane.showInputDialog(vista, "Ingrese nueva contraseña (mínimo 6 caracteres):");
+        String nueva = vista.ingresarNuevaContrasena();
         if (nueva != null) {
             if (nueva.length() >= 6) {
                 try {
                     String actual = modeloUsuario.getContrasenaActual(correoUsuario);
                     if (nueva.equals(actual)) {
-                        JOptionPane.showMessageDialog(vista,
-                                "La nueva contraseña no puede ser igual a la actual",
-                                "Error", JOptionPane.ERROR_MESSAGE);
+                        vista.mostrarMensaje("La nueva contraseña no puede ser igual a la actual");
                         return;
                     }
 
@@ -312,29 +169,18 @@ public class ControladorCuenta {
                     if (resultado > 0) {
                         String asunto = "Contraseña actualizada";
                         String mensaje = "Su nueva contraseña es: " + nueva;
-                        EmailSender.enviarCorreo(correoUsuario, asunto, mensaje);
+                        emailSender.enviarCorreo(correoUsuario, asunto, mensaje);
 
-                        JOptionPane.showMessageDialog(vista,
-                                "¡Contraseña actualizada y enviada a su correo!",
-                                "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                        if (vista.jTextField1Contraseña1 != null) {
-                            vista.jTextField1Contraseña1.setText("********");
-                        }
+                        vista.mostrarMensaje("¡Contraseña actualizada y enviada a su correo!");
+                        vista.setContrasena("********");
                     } else {
-                        JOptionPane.showMessageDialog(vista,
-                                "No se pudo actualizar la contraseña",
-                                "Error", JOptionPane.ERROR_MESSAGE);
+                        vista.mostrarMensaje("No se pudo actualizar la contraseña");
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(vista,
-                            "Error al cambiar contraseña: " + e.getMessage(),
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                    vista.mostrarMensaje("Error al cambiar contraseña: " + e.getMessage());
                 }
             } else {
-                JOptionPane.showMessageDialog(vista,
-                        "La contraseña debe tener al menos 6 caracteres",
-                        "Contraseña inválida", JOptionPane.WARNING_MESSAGE);
+                vista.mostrarMensaje("La contraseña debe tener al menos 6 caracteres");
             }
         }
     }

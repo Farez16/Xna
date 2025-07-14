@@ -143,6 +143,32 @@ public class DashboardAdmin extends javax.swing.JPanel {
         return btnMenu1;
     }
 
+    public void actualizarImagenPerfil(String ruta) {
+        try {
+            java.awt.image.BufferedImage img;
+            if (ruta.startsWith("http")) {
+                img = javax.imageio.ImageIO.read(new java.net.URL(ruta));
+            } else {
+                img = javax.imageio.ImageIO.read(new java.io.File(ruta));
+            }
+
+            int size = 120;
+            java.awt.image.BufferedImage circleBuffer = new java.awt.image.BufferedImage(size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            java.awt.Graphics2D g2 = circleBuffer.createGraphics();
+            java.awt.geom.Ellipse2D.Double circle = new java.awt.geom.Ellipse2D.Double(0, 0, size, size);
+            g2.setClip(circle);
+            g2.drawImage(img, 0, 0, size, size, null);
+            g2.dispose();
+
+            LblimagenPrincipal.setIcon(new javax.swing.ImageIcon(circleBuffer));
+            LblimagenPrincipal.revalidate();
+            LblimagenPrincipal.repaint();
+
+        } catch (Exception ex) {
+            System.err.println("Error actualizando imagen en Dashboard: " + ex.getMessage());
+        }
+    }
+
     private void iniciarEfectosBotones() {
         // 1. Crear el mapa de botones
         Map<String, JButton> botonesMap = new HashMap<>();
@@ -157,6 +183,10 @@ public class DashboardAdmin extends javax.swing.JPanel {
         System.out.println("ModeloTextos creado: " + modeloTextos); // Debug
         controladorBotones = new ControladorBotones(botonesMap, modeloTextos);
         controladorBotones.iniciar();
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        javax.swing.JOptionPane.showMessageDialog(this, mensaje);
     }
 
     @SuppressWarnings("unchecked")
