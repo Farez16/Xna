@@ -4,12 +4,13 @@ import Conexion.Conexion;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import org.json.JSONObject;
 
 public class UsuarioGoogleD {
 
-    public static void registrarOIniciarSesion(String jsonIdentity) {
+    public void registrarOIniciarSesion(String jsonIdentity) {
         JSONObject obj = new JSONObject(jsonIdentity);
         String email = obj.getString("email");
         String nombre = obj.getString("name");
@@ -19,6 +20,7 @@ public class UsuarioGoogleD {
         String cuerpo;
 
         try (Connection conn = Conexion.conectar()) {
+            Usuario usuario = new Usuario(conn);
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM usuarios_google WHERE email = ?");
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
@@ -43,13 +45,12 @@ public class UsuarioGoogleD {
 
             // Enviar correo en ambos casos
             EmailSender.enviarCorreo(email, asunto, cuerpo);
-            if (!Usuario.estaRegistrado(email)) {
-                Usuario.actualizarContrasena(email, "temp_password", nombre); // Esto debe usar rol 1 por defecto
+            if (!usuario.estaRegistrado(email)) {
+                usuario.actualizarContrasena(email, "temp_password", nombre); // Esto debe usar rol 1 por defecto
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al registrar o iniciar sesión: " + e.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

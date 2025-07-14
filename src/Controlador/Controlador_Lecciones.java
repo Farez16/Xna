@@ -1,22 +1,25 @@
 package Controlador;
 
 import Modelo.Modelo_Lecciones;
-import Modelo.Usuario;
 import Modelo.Modelo_Progreso_Usuario;
-import Vista.*;
+import Modelo.Usuario;
+import Vista.Vista_LeccionFONOLOGIA;
+import Vista.Vista_LeccionPRONOMBRES;
+import Vista.Vista_LeccionSALUDOS;
+import Vista.Vista_Unidad1;
 import java.awt.Image;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.sql.Connection;
-import java.time.LocalDateTime;
+import java.sql.SQLException;
 import java.util.List;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
-/**
- * Controlador simplificado para manejar todas las lecciones
- */
 public class Controlador_Lecciones {
 
     private final JPanel vistaLeccion;
@@ -24,13 +27,13 @@ public class Controlador_Lecciones {
     private final Connection conn;
     private final String correo;
     private final int numeroLeccion;
-    private final int idUsuario;
+    private int idUsuario;
     private final int ID_UNIDAD = 1;
     private ImageIcon imagen1Original;
     private ImageIcon imagen2Original;
-        private final Controlador_Unidades controladorUnidades;
+    private final Controlador_Unidades controladorUnidades;
+    private final Usuario usuario;
 
-    // Tipos de lecciones
     public static final int LECCION_SALUDOS = 1;
     public static final int LECCION_FONOLOGIA = 2;
     public static final int LECCION_PRONOMBRES = 3;
@@ -40,23 +43,23 @@ public class Controlador_Lecciones {
         this.vistaLeccion = vistaLeccion;
         this.controladorDashboard = controladorDashboard;
         this.conn = conn;
+        this.usuario = new Usuario(conn);
 
         if (correo == null || correo.trim().isEmpty()) {
             throw new IllegalArgumentException("El correo no puede ser nulo o vacío");
         }
         this.correo = correo.trim();
-
         this.numeroLeccion = numeroLeccion;
 
-        // Obtener idUsuario a partir del correo
-        this.idUsuario = Usuario.obtenerIdPorCorreo(this.correo);
+        try {
+            this.idUsuario = usuario.obtenerIdPorCorreo(this.correo);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(vistaLeccion, "Error al obtener el ID del usuario: " + ex.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
+        }
 
         if (this.idUsuario <= 0) {
             throw new IllegalArgumentException("Usuario no encontrado con el correo: " + this.correo);
         }
-
-        System.out.println("=== Inicializando Controlador_Lecciones ===");
-        System.out.println("Lección: " + numeroLeccion + " | Usuario (correo): " + this.correo);
 
         configurarVistaLeccion();
         agregarListeners();
@@ -64,18 +67,12 @@ public class Controlador_Lecciones {
     }
 
     private void configurarVistaLeccion() {
-        System.out.println("Configurando vista de lección: " + numeroLeccion);
-
-        // Configurar según el tipo de lección
         configurarSegunTipoLeccion();
 
-        // Para lecciones con WebView, dar tiempo adicional
         if (numeroLeccion == LECCION_SALUDOS) {
             SwingUtilities.invokeLater(() -> {
-                // Esperar a que la vista esté completamente visible
                 Timer timer = new Timer(200, e -> {
                     if (vistaLeccion.isShowing()) {
-                        System.out.println("Vista de saludos visible, WebView debería inicializarse automáticamente");
                         ((Timer) e.getSource()).stop();
                     }
                 });
@@ -122,7 +119,6 @@ public class Controlador_Lecciones {
     }
 
     private void agregarListeners() {
-        // Agregar listeners según el tipo de vista
         if (vistaLeccion instanceof Vista_LeccionSALUDOS) {
             Vista_LeccionSALUDOS vista = (Vista_LeccionSALUDOS) vistaLeccion;
             vista.jButtonCOMPLETOSALUDOS.addActionListener(e -> completarLeccion());
@@ -151,24 +147,10 @@ public class Controlador_Lecciones {
         }
     }
 
-    private void actualizarImagen(JLabel label, ImageIcon imagenOriginal) {
-        int ancho = label.getWidth();
-        int alto = label.getHeight();
-
-        if (ancho > 0 && alto > 0 && imagenOriginal != null) {
-            Image imagenEscalada = imagenOriginal.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
-            label.setIcon(new ImageIcon(imagenEscalada));
-        }
-    }
-
     private void completarLeccion() {
         try {
-            System.out.println("Completando lección " + numeroLeccion);
-
-            // Obtener o crear progreso para el usuario
             Modelo_Progreso_Usuario progreso = ControladorProgresoUsuario.obtenerProgreso(idUsuario, ID_UNIDAD);
 
-            // Verificar si esta lección ya fue completada
             if (progreso.getLeccionesCompletadas() >= numeroLeccion) {
                 int respuesta = JOptionPane.showConfirmDialog(
                         vistaLeccion,
@@ -183,7 +165,6 @@ public class Controlador_Lecciones {
                 }
             }
 
-            // Actualizar progreso de lecciones usando el controlador
             boolean actualizado = ControladorProgresoUsuario.actualizarLeccion(progreso, numeroLeccion);
 
             if (actualizado || progreso.getLeccionesCompletadas() >= numeroLeccion) {
@@ -199,8 +180,6 @@ public class Controlador_Lecciones {
             }
 
         } catch (Exception e) {
-            System.err.println("Error al completar lección: " + e.getMessage());
-            e.printStackTrace();
             JOptionPane.showMessageDialog(
                     vistaLeccion,
                     "Error inesperado al completar la lección: " + e.getMessage(),
@@ -234,27 +213,18 @@ public class Controlador_Lecciones {
     }
 
     private void actualizarInterfaz() {
-        System.out.println("Actualizando interfaz - regresando a Unidad 1");
-
-        // Crear nueva instancia de la vista de unidad
         Vista_Unidad1 vistaUnidad1 = new Vista_Unidad1();
-        new Controlador_Unidad1(vistaUnidad1, conn, controladorDashboard, correo,controladorUnidades);
+        new Controlador_Unidad1(vistaUnidad1, conn, controladorDashboard, correo, controladorUnidades);
         controladorDashboard.getVista().mostrarVista(vistaUnidad1);
     }
 
     private void configurarVistaLeccionSaludos() {
-        System.out.println(">> Entrando a configurarVistaLeccionSaludos()");
         if (vistaLeccion instanceof Vista_LeccionSALUDOS) {
             Vista_LeccionSALUDOS vista = (Vista_LeccionSALUDOS) vistaLeccion;
 
-            // Obtener textos
             List<Modelo_Lecciones> textos = Modelo_Lecciones.obtenerLeccionesPorUnidadYTipo(conn, ID_UNIDAD, "texto");
             List<Modelo_Lecciones> imagenes = Modelo_Lecciones.obtenerLeccionesPorUnidadYTipo(conn, ID_UNIDAD, "imagen");
 
-            System.out.println("Textos encontrados: " + textos.size());
-            System.out.println("Imágenes encontradas: " + imagenes.size());
-
-            // Mostrar textos
             if (textos.size() > 0) {
                 vista.jTextAreaTexto1Saludos.setText(textos.get(0).getContenido());
             }
@@ -262,11 +232,9 @@ public class Controlador_Lecciones {
                 vista.jTextAreaTexto2Saludos.setText(textos.get(1).getContenido());
             }
 
-            // Cargar y mostrar imagen 1
             String rutaImagen1 = "Imagenes/Lecciones/Imagen1Saludos.png";
             java.net.URL url1 = getClass().getClassLoader().getResource(rutaImagen1);
             if (url1 != null) {
-                System.out.println("Ruta imagen 1: " + url1);
                 imagen1Original = new ImageIcon(url1);
                 escalarYMostrarImagen(vista.jLabelImagen1Saludos, imagen1Original);
 
@@ -276,15 +244,11 @@ public class Controlador_Lecciones {
                         escalarYMostrarImagen(vista.jLabelImagen1Saludos, imagen1Original);
                     }
                 });
-            } else {
-                System.out.println("Error: imagen1 no pudo cargarse desde la ruta");
             }
 
-            // Cargar y mostrar imagen 2
             String rutaImagen2 = "Imagenes/Lecciones/Imagen2Saludos.png";
             java.net.URL url2 = getClass().getClassLoader().getResource(rutaImagen2);
             if (url2 != null) {
-                System.out.println("Ruta imagen 2: " + url2);
                 imagen2Original = new ImageIcon(url2);
                 escalarYMostrarImagen(vista.jLabelImagen2Saludos, imagen2Original);
 
@@ -294,8 +258,6 @@ public class Controlador_Lecciones {
                         escalarYMostrarImagen(vista.jLabelImagen2Saludos, imagen2Original);
                     }
                 });
-            } else {
-                System.out.println("Error: imagen2 no pudo cargarse desde la ruta");
             }
         }
     }
@@ -310,12 +272,11 @@ public class Controlador_Lecciones {
         }
     }
 
-    // Método para obtener estadísticas de progreso
     public String obtenerEstadisticasProgreso() {
         Modelo_Progreso_Usuario progreso = ControladorProgresoUsuario.obtenerProgreso(idUsuario, ID_UNIDAD);
 
-        int totalLecciones = 3; // Saludos, Fonología, Pronombres
-        int totalActividades = 2; // Ajusta según tu unidad
+        int totalLecciones = 3;
+        int totalActividades = 2;
 
         double porcentajeLecciones = (double) progreso.getLeccionesCompletadas() / totalLecciones * 100;
         double porcentajeActividades = (double) progreso.getActividadesCompletadas() / totalActividades * 100;
@@ -328,5 +289,4 @@ public class Controlador_Lecciones {
                 progreso.getCalificacion()
         );
     }
-
 }

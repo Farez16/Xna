@@ -2,16 +2,17 @@ package Vista;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 public class Login extends javax.swing.JFrame {
 
     private String correoUsuario;
     private JPanel panelLoginOriginal;
-    public String contrasenaReal = "";
-    private Timer timerOcultar;
 
     public Login() {
         initComponents();
@@ -20,7 +21,6 @@ public class Login extends javax.swing.JFrame {
         TxtContraseña.setEnabled(false);
         campoUsuario();
 
-        // Desbloquear contraseña al escribir usuario
         TxtUsuario.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -31,48 +31,42 @@ public class Login extends javax.swing.JFrame {
             }
         });
 
-        // Simular campo de contraseña seguro con JTextField
-        TxtContraseña.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { actualizar(); }
-            @Override
-            public void removeUpdate(DocumentEvent e) { actualizar(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { actualizar(); }
-
-            private void actualizar() {
-                if (TxtContraseña.isEnabled()) {
-                    String texto = TxtContraseña.getText();
-                    if (!texto.chars().allMatch(c -> c == '*')) {
-                        contrasenaReal = texto;
-                    }
-                    if (timerOcultar != null && timerOcultar.isRunning()) {
-                        timerOcultar.stop();
-                    }
-                    timerOcultar = new Timer(1000, ev -> {
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i < contrasenaReal.length(); i++) sb.append("*");
-                        TxtContraseña.setText(sb.toString());
-                    });
-                    timerOcultar.setRepeats(false);
-                    timerOcultar.start();
-                }
-            }
-        });
-
         SwingUtilities.invokeLater(() -> {
             inf.requestFocusInWindow();
         });
     }
 
-    public String getCorreoUsuario() { return correoUsuario; }
-    public JPanel getPanelLoginOriginal() { return panelLoginOriginal; }
-    public JPanel getPanel1() { return Panel1; }
-    public JTextField getTxtContraseña() { return TxtContraseña; }
-    public JTextField getTxtUsuario() { return TxtUsuario; }
-    public JButton getBtnInicar() { return btnInicar; }
-    public JButton getBtnCodigo() { return btnCodigo; }
-    public JLabel getInf() { return inf; }
+    public String getCorreoUsuario() {
+        return correoUsuario;
+    }
+
+    public JPanel getPanelLoginOriginal() {
+        return panelLoginOriginal;
+    }
+
+    public JPanel getPanel1() {
+        return Panel1;
+    }
+
+    public JPasswordField getTxtContraseña() {
+        return TxtContraseña;
+    }
+
+    public JTextField getTxtUsuario() {
+        return TxtUsuario;
+    }
+
+    public JButton getBtnInicar() {
+        return btnInicar;
+    }
+
+    public JButton getBtnCodigo() {
+        return btnCodigo;
+    }
+
+    public JLabel getInf() {
+        return inf;
+    }
 
     public void mostrarPanelEnPanel1(JPanel panel) {
         Panel1.removeAll();
@@ -85,22 +79,23 @@ public class Login extends javax.swing.JFrame {
     public void limpiarCampos() {
         TxtUsuario.setText("");
         TxtContraseña.setText("");
-        contrasenaReal = "";
         TxtContraseña.setEnabled(false);
         TxtUsuario.requestFocus();
     }
 
-
+    public void mostrarMensaje(String mensaje) {
+        javax.swing.JOptionPane.showMessageDialog(this, mensaje);
+    }
 
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
         Panel1 = new javax.swing.JPanel();
         panelFormularioLogin = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         TxtUsuario = new javax.swing.JTextField();
-        TxtContraseña = new javax.swing.JTextField();
+        TxtContraseña = new javax.swing.JPasswordField();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         btnCodigo = new javax.swing.JButton();
@@ -145,11 +140,6 @@ public class Login extends javax.swing.JFrame {
         btnCodigo.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         btnCodigo.setForeground(new java.awt.Color(255, 255, 255));
         btnCodigo.setText("CREAR CUENTA");
-        btnCodigo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCodigoActionPerformed(evt);
-            }
-        });
         jPanel1.add(btnCodigo, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 300, 230, 40));
 
         inf.setBackground(new java.awt.Color(255, 255, 255));
@@ -162,11 +152,6 @@ public class Login extends javax.swing.JFrame {
         btnInicar.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         btnInicar.setForeground(new java.awt.Color(255, 255, 255));
         btnInicar.setText("INICIAR SESION");
-        btnInicar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnInicarActionPerformed(evt);
-            }
-        });
         jPanel1.add(btnInicar, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 240, 230, 40));
 
         jLabel2.setBackground(new java.awt.Color(255, 255, 255));
@@ -189,27 +174,9 @@ public class Login extends javax.swing.JFrame {
         getContentPane().add(Panel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1370, 770));
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>
 
-    private void btnInicarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInicarActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnInicarActionPerformed
-
-    private void btnCodigoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCodigoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCodigoActionPerformed
-
-    public static void main(String args[]) {
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Login().setVisible(true);
-            }
-        });
-    }
-
-           private void campoUsuario() {
+    private void campoUsuario() {
         TxtUsuario.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -218,19 +185,20 @@ public class Login extends javax.swing.JFrame {
                     TxtUsuario.setForeground(Color.BLACK);
                 }
             }
+
             @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (TxtUsuario.getText().isEmpty()) {
                     TxtUsuario.setText(" Usuario");
-                    TxtUsuario.setForeground(new Color(187,187,187));
+                    TxtUsuario.setForeground(new Color(187, 187, 187));
                 }
             }
         });
     }
-        
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+
+    // Variables declaration - do not modify
     public javax.swing.JPanel Panel1;
-    public javax.swing.JTextField TxtContraseña;
+    public javax.swing.JPasswordField TxtContraseña;
     public javax.swing.JTextField TxtUsuario;
     public javax.swing.JButton btnCodigo;
     public javax.swing.JButton btnInicar;
@@ -242,6 +210,5 @@ public class Login extends javax.swing.JFrame {
     public javax.swing.JLabel jLabel5;
     public javax.swing.JPanel jPanel1;
     public javax.swing.JPanel panelFormularioLogin;
-    // End of variables declaration//GEN-END:variables
-
+    // End of variables declaration
 }

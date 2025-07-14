@@ -6,27 +6,28 @@ import Modelo.Usuario;
 import Vista.Vista_Actividad1U1;
 import Vista.Vista_Actividad2U1;
 import Vista.Vista_Unidad1;
-
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
 
 public class Controlador_Actividades {
 
     private final javax.swing.JPanel vista;
     private final ControladorDashboard controladorDashboard;
     private final Connection conn;
-    private final String correo;  // Cambiado de cedula a correo
+    private final String correo;
     private final int idActividad;
     private Modelo_Actividades actividad;
-    private final Controlador_Unidad1 controladorUnidad1; // Cambiado a Controlador_Unidad1
+    private final Controlador_Unidad1 controladorUnidad1;
+    private final Usuario usuario;
 
-    // Constructor actualizado para recibir Controlador_Unidad1
     public Controlador_Actividades(javax.swing.JPanel vista, ControladorDashboard controladorDashboard,
             Connection conn, String correo, int idActividad, Controlador_Unidad1 controladorUnidad1) {
         this.vista = vista;
         this.controladorDashboard = controladorDashboard;
         this.conn = conn;
+        this.usuario = new Usuario(conn);
 
         if (correo == null || correo.trim().isEmpty()) {
             throw new IllegalArgumentException("El correo no puede ser nulo o vacío");
@@ -34,12 +35,11 @@ public class Controlador_Actividades {
         this.correo = correo.trim();
 
         this.idActividad = idActividad;
-        this.controladorUnidad1 = controladorUnidad1; // Asignar el controlador
+        this.controladorUnidad1 = controladorUnidad1;
 
         agregarEventoCompletar();
     }
 
-    // Constructor de compatibilidad (opcional, por si lo necesitas en otro lugar)
     public Controlador_Actividades(javax.swing.JPanel vista, ControladorDashboard controladorDashboard,
             Connection conn, String correo, int idActividad) {
         this(vista, controladorDashboard, conn, correo, idActividad, null);
@@ -62,13 +62,11 @@ public class Controlador_Actividades {
             act1.jLabelMensajeRespuesta.setText("");
             act1.buttonGroupOpciones.clearSelection();
 
-            // Eliminar listeners previos para evitar que se acumulen
             for (ActionListener al : act1.jButtonResponder.getActionListeners()) {
                 act1.jButtonResponder.removeActionListener(al);
             }
-            act1.jButtonCOMPLETOACTV1.setEnabled(false); // Solo se activa al responder bien
+            act1.jButtonCOMPLETOACTV1.setEnabled(false);
 
-            // Agregar el listener para validar respuesta al pulsar responder
             act1.jButtonResponder.addActionListener(e -> validarRespuesta(act1));
         }
     }
@@ -89,24 +87,27 @@ public class Controlador_Actividades {
             return;
         }
 
-        // Validar si la respuesta es correcta
         if (respuestaSeleccionada.equalsIgnoreCase(actividad.getRespuestaCorrecta() + "")) {
             act1.jLabelMensajeRespuesta.setText("¡Correcto!");
-            act1.jButtonCOMPLETOACTV1.setEnabled(true);  // Solo se habilita si responde bien
+            act1.jButtonCOMPLETOACTV1.setEnabled(true);
         } else {
             act1.jLabelMensajeRespuesta.setText("Incorrecto. Inténtalo de nuevo.");
-            act1.jButtonCOMPLETOACTV1.setEnabled(false); // Desactiva el botón si responde mal
+            act1.jButtonCOMPLETOACTV1.setEnabled(false);
         }
     }
 
     private void agregarEventoCompletar() {
-        int idUsuario = Usuario.obtenerIdPorCorreo(correo);
+        try {
+            int idUsuario = usuario.obtenerIdPorCorreo(correo);
 
-        if (vista instanceof Vista_Actividad1U1 act1) {
-            act1.jButtonCOMPLETOACTV1.addActionListener(e -> completarActividad(idUsuario));
-        }
-        if(vista instanceof Vista_Actividad2U1 act2){
-            act2.jButtonCOMPLETOACTV2.addActionListener(e -> completarActividad(idUsuario) );
+            if (vista instanceof Vista_Actividad1U1 act1) {
+                act1.jButtonCOMPLETOACTV1.addActionListener(e -> completarActividad(idUsuario));
+            }
+            if (vista instanceof Vista_Actividad2U1 act2) {
+                act2.jButtonCOMPLETOACTV2.addActionListener(e -> completarActividad(idUsuario));
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(vista, "Error al obtener el ID del usuario: " + ex.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -117,20 +118,15 @@ public class Controlador_Actividades {
             System.out.println("Actividad " + idActividad + " completada");
         }
 
-        // Volver a la vista unidad1 usando el controlador existente
         if (controladorUnidad1 != null) {
-            // Actualizar el controlador de unidades para reflejar el progreso
-            controladorUnidad1.actualizarVista(); // Necesitarás crear este método
+            controladorUnidad1.actualizarVista();
             
-            // Volver a la vista de unidad1
             Vista_Unidad1 vistaUnidad1 = new Vista_Unidad1();
-            new Controlador_Unidad1(vistaUnidad1, conn, controladorDashboard, correo, 
-                                   controladorUnidad1.getControladorUnidades()); // Necesitarás crear este getter
+            new Controlador_Unidad1(vistaUnidad1, conn, controladorDashboard, correo,
+                    controladorUnidad1.getControladorUnidades());
             controladorDashboard.getVista().mostrarVista(vistaUnidad1);
         } else {
-            // Fallback si no hay controlador disponible
             Vista_Unidad1 vistaUnidad1 = new Vista_Unidad1();
-            // Aquí necesitarías obtener el controlador de unidades de alguna manera
             controladorDashboard.getVista().mostrarVista(vistaUnidad1);
         }
     }
