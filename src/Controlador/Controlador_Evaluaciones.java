@@ -6,12 +6,12 @@ import Modelo.Usuario;
 import Vista.Vista_EvaluacionU1;
 import Vista.Vista_Unidad1;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.JOptionPane;
-import javax.swing.JRadioButton;
 
 public class Controlador_Evaluaciones {
 
@@ -21,21 +21,21 @@ public class Controlador_Evaluaciones {
     private final String correo;
     private final int idUnidad;
     private final Controlador_Unidades controladorUnidades;
+    private final Usuario usuario;
 
-    private List<Modelo_Evaluaciones> preguntas; // Lista de preguntas seleccionadas
-    private final List<ButtonGroup> gruposBotones; // Lista de ButtonGroups para validar respuestas
+    private List<Modelo_Evaluaciones> preguntas;
+    private final List<ButtonGroup> gruposBotones;
 
-    // Constructor corregido - ahora recibe controladorUnidades como parámetro
-    public Controlador_Evaluaciones(Vista_EvaluacionU1 vista, ControladorDashboard controladorDashboard, 
-                                   Connection conn, String correo, int idUnidad, Controlador_Unidades controladorUnidades) {
+    public Controlador_Evaluaciones(Vista_EvaluacionU1 vista, ControladorDashboard controladorDashboard,
+                                    Connection conn, String correo, int idUnidad, Controlador_Unidades controladorUnidades) {
         this.vista = vista;
         this.controladorDashboard = controladorDashboard;
         this.conn = conn;
         this.correo = correo;
         this.idUnidad = idUnidad;
-        this.controladorUnidades = controladorUnidades; // Asignar el parámetro recibido
+        this.controladorUnidades = controladorUnidades;
+        this.usuario = new Usuario(conn);
 
-        // Inicializar la lista de ButtonGroups con los grupos de la vista en orden
         gruposBotones = new ArrayList<>();
         gruposBotones.add(vista.buttonGroupPregunta1);
         gruposBotones.add(vista.buttonGroupPregunta2);
@@ -48,14 +48,13 @@ public class Controlador_Evaluaciones {
         gruposBotones.add(vista.buttonGroupPregunta9);
         gruposBotones.add(vista.buttonGroupPregunta10);
 
-        vista.jButtonCOMPLETOEVALUACION1.setEnabled(false); // Deshabilitar botón completar inicialmente
+        vista.jButtonCOMPLETOEVALUACION1.setEnabled(false);
 
         cargarPreguntasAleatorias();
         agregarEventos();
     }
 
     private void agregarEventos() {
-        // Evento para validar respuestas y habilitar botón completar
         vista.jButtonEnviarRespuestas.addActionListener(e -> {
             int correctas = validarRespuestas();
             if (correctas >= 7) {
@@ -67,19 +66,21 @@ public class Controlador_Evaluaciones {
             }
         });
 
-        // Evento para completar evaluación y actualizar progreso
         vista.jButtonCOMPLETOEVALUACION1.addActionListener(e -> {
-            int idUsuario = Usuario.obtenerIdPorCorreo(correo);
-            Modelo_Progreso_Usuario progreso = ControladorProgresoUsuario.obtenerProgreso(idUsuario, idUnidad);
-            boolean actualizado = ControladorProgresoUsuario.aprobarEvaluacion(progreso, 100);
-            if (actualizado) {
-                JOptionPane.showMessageDialog(vista, "Evaluación aprobada. Puedes continuar con la siguiente unidad.");
-                Vista_Unidad1 vistaUnidad1 = new Vista_Unidad1();
-                // Ahora controladorUnidades ya no es null
-                new Controlador_Unidad1(vistaUnidad1, conn, controladorDashboard, correo, controladorUnidades);
-                controladorDashboard.getVista().mostrarVista(vistaUnidad1);
-            } else {
-                JOptionPane.showMessageDialog(vista, "Error al actualizar el progreso.");
+            try {
+                int idUsuario = usuario.obtenerIdPorCorreo(correo);
+                Modelo_Progreso_Usuario progreso = ControladorProgresoUsuario.obtenerProgreso(idUsuario, idUnidad);
+                boolean actualizado = ControladorProgresoUsuario.aprobarEvaluacion(progreso, 100);
+                if (actualizado) {
+                    JOptionPane.showMessageDialog(vista, "Evaluación aprobada. Puedes continuar con la siguiente unidad.");
+                    Vista_Unidad1 vistaUnidad1 = new Vista_Unidad1();
+                    new Controlador_Unidad1(vistaUnidad1, conn, controladorDashboard, correo, controladorUnidades);
+                    controladorDashboard.getVista().mostrarVista(vistaUnidad1);
+                } else {
+                    JOptionPane.showMessageDialog(vista, "Error al actualizar el progreso.");
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(vista, "Error al obtener el ID del usuario: " + ex.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
@@ -203,82 +204,72 @@ public class Controlador_Evaluaciones {
     private int validarRespuestas() {
         int correctas = 0;
 
-        // Pregunta 1
         String seleccion = vista.buttonGroupPregunta1.getSelection() != null
-            ? vista.buttonGroupPregunta1.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta1.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(0).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 2
         seleccion = vista.buttonGroupPregunta2.getSelection() != null
-            ? vista.buttonGroupPregunta2.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta2.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(1).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 3
         seleccion = vista.buttonGroupPregunta3.getSelection() != null
-            ? vista.buttonGroupPregunta3.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta3.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(2).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 4
         seleccion = vista.buttonGroupPregunta4.getSelection() != null
-            ? vista.buttonGroupPregunta4.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta4.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(3).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 5
         seleccion = vista.buttonGroupPregunta5.getSelection() != null
-            ? vista.buttonGroupPregunta5.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta5.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(4).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 6
         seleccion = vista.buttonGroupPregunta6.getSelection() != null
-            ? vista.buttonGroupPregunta6.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta6.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(5).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 7
         seleccion = vista.buttonGroupPregunta7.getSelection() != null
-            ? vista.buttonGroupPregunta7.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta7.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(6).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 8
         seleccion = vista.buttonGroupPregunta8.getSelection() != null
-            ? vista.buttonGroupPregunta8.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta8.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(7).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 9
         seleccion = vista.buttonGroupPregunta9.getSelection() != null
-            ? vista.buttonGroupPregunta9.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta9.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(8).getRespuestaCorrecta()) {
             correctas++;
         }
 
-        // Pregunta 10
         seleccion = vista.buttonGroupPregunta10.getSelection() != null
-            ? vista.buttonGroupPregunta10.getSelection().getActionCommand()
-            : null;
+                ? vista.buttonGroupPregunta10.getSelection().getActionCommand()
+                : null;
         if (seleccion != null && seleccion.charAt(0) == preguntas.get(9).getRespuestaCorrecta()) {
             correctas++;
         }

@@ -1,63 +1,57 @@
 package Controlador;
 
+import Conexion.Conexion;
+import Modelo.MostrarDatosAdmin;
 import Modelo.Saludo;
+import Modelo.TextoBotones;
+import Modelo.Usuario;
+import Vista.Cuenta;
 import Vista.DashboardAdmin;
 import Vista.Login;
-import Modelo.Usuario;
-import Conexion.Conexion;
-import javax.swing.JOptionPane;
-import Controlador.ControladorSaludo;
-import Modelo.MostrarDatosAdmin;
-import Modelo.TextoBotones;
-import Vista.Cuenta;
 import Vista.RegistrarAdmin;
 import Vista.VistaMostrarAdmin;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 
 public class ControladorDashboardAdmin {
 
-    private DashboardAdmin vista;
-    private Login loginFrame;
+    private final DashboardAdmin vista;
+    private final Login loginFrame;
     private ControladorSaludo controladorSaludo;
+    private final Usuario usuario;
+    private final Connection conn;
 
     public ControladorDashboardAdmin(DashboardAdmin vista, Login loginFrame) {
         this.vista = vista;
         this.loginFrame = loginFrame;
+        this.conn = Conexion.conectar();
+        this.usuario = new Usuario(conn);
+
         agregarEventos();
-        cargarDatosUsuario(vista.getCorreoUsuario()); // Carga nombre y rol
-        //Cargar Imagen del usuario
+        cargarDatosUsuario(vista.getCorreoUsuario());
         cargarImagenUsuario();
-        //Mostrar Botones Animados
         configurarBotonesAnimados();
-        // Mostrar VistaMostrarAdmin al iniciar
         mostrarVistaInicial();
 
-        // Configuración inicial
         vista.getPanelVistas().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        // Carga diferida
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            mostrarVistaInicial();
-        });
+        javax.swing.SwingUtilities.invokeLater(this::mostrarVistaInicial);
     }
 
     private void agregarEventos() {
-        //Boton para abrir el panel de inicio
         vista.btnMenu1.addActionListener(e -> AbrirVistaInicio());
-        //Boton para abrir el panel de Registrar Administradores
         vista.btnCrearAdmin.addActionListener(e -> AbrirVistaRegistrar());
-        //Boton para abrir el panel de la Cuenta
         vista.btnCuenta1.addActionListener(e -> abrirCuenta());
-        // Botón Salir (igual que en Dashboard)
         vista.btnSalir1.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(
                     null,
@@ -75,62 +69,54 @@ public class ControladorDashboardAdmin {
 
     private void mostrarVistaInicial() {
         VistaMostrarAdmin vistaInicial = new VistaMostrarAdmin();
-        Conexion conexion = new Conexion();
-        MostrarDatosAdmin modelo = new MostrarDatosAdmin(conexion.getConexion());
+        MostrarDatosAdmin modelo = new MostrarDatosAdmin(conn);
         ControladorMostrar controlador = new ControladorMostrar(vistaInicial, modelo);
         vista.mostrarVista(vistaInicial);
     }
 
     private void AbrirVistaInicio() {
         VistaMostrarAdmin vistaInicio = new VistaMostrarAdmin();
-        Conexion conexion = new Conexion();
-        MostrarDatosAdmin modelo = new MostrarDatosAdmin(conexion.getConexion());
+        MostrarDatosAdmin modelo = new MostrarDatosAdmin(conn);
         ControladorMostrar controlador = new ControladorMostrar(vistaInicio, modelo);
         vista.mostrarVista(vistaInicio);
     }
 
     private void AbrirVistaRegistrar() {
-        RegistrarAdmin va  = new RegistrarAdmin();
-        Conexion conexion = new Conexion();
-        Usuario modeloUsuario = new Usuario(conexion.getConexion());
-        ControladorRegistrarAdmin controlador = new ControladorRegistrarAdmin(va, modeloUsuario);
+        RegistrarAdmin va = new RegistrarAdmin();
+        ControladorRegistrarAdmin controlador = new ControladorRegistrarAdmin(va);
         vista.mostrarVista(va);
     }
 
     private void abrirCuenta() {
-        System.out.println("Intentando abrir panel de cuenta...");
         try {
             Cuenta cuentaPanel = new Cuenta();
-            System.out.println("Componentes en cuentaPanel:");
-            System.out.println("btnSubirImagenURL: " + (cuentaPanel.btnSubirImagenURL != null ? "Existe" : "NULL"));
-            System.out.println("jButton1SubirImagen: " + (cuentaPanel.jButton1SubirImagen != null ? "Existe" : "NULL"));
-
             new ControladorCuenta(cuentaPanel, vista.getCorreoUsuario(), vista);
             vista.mostrarVista(cuentaPanel);
-            System.out.println("Panel de cuenta mostrado correctamente");
         } catch (Exception e) {
-            System.err.println("Error al abrir cuenta: " + e.getMessage());
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(vista, "Error al abrir la cuenta: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void cargarDatosUsuario(String correo) {
-        String[] datos = Usuario.obtenerNombreYRol(correo);
-        if (datos[0] != null && datos[1] != null) {
-            vista.setNombreUsuario(datos[0]); // Asigna nombre al JLabel
-            vista.setRolUsuario(datos[1]);
+        try {
+            String[] datos = usuario.obtenerNombreYRol(correo);
+            if (datos[0] != null && datos[1] != null) {
+                vista.setNombreUsuario(datos[0]);
+                vista.setRolUsuario(datos[1]);
 
-            // Configurar saludo
-            if (controladorSaludo != null) {
-                controladorSaludo.detener();
+                if (controladorSaludo != null) {
+                    controladorSaludo.detener();
+                }
+                Saludo saludo = new Saludo("Bienvenido, Administrador");
+                controladorSaludo = new ControladorSaludo(
+                        vista.getLblSaludo(),
+                        vista.getLblNombre(),
+                        saludo
+                );
+                controladorSaludo.inicializarVista();
             }
-            Saludo saludo = new Saludo("Bienvenido, Administrador"); // Mensaje personalizado
-            controladorSaludo = new ControladorSaludo(
-                    vista.getLblSaludo(),
-                    vista.getLblNombre(),
-                    saludo
-            );
-            controladorSaludo.inicializarVista();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(vista, "Error al cargar los datos del usuario: " + ex.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -142,9 +128,13 @@ public class ControladorDashboardAdmin {
     }
 
     private void cargarImagenUsuario() {
-        String rutaImagen = Usuario.obtenerImagenUsuario(vista.getCorreoUsuario());
-        if (rutaImagen != null && !rutaImagen.isEmpty()) {
-            actualizarImagenPerfil(rutaImagen);
+        try {
+            String rutaImagen = usuario.obtenerImagenUsuario(vista.getCorreoUsuario());
+            if (rutaImagen != null && !rutaImagen.isEmpty()) {
+                actualizarImagenPerfil(rutaImagen);
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(vista, "Error al cargar la imagen del usuario: " + ex.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -173,7 +163,6 @@ public class ControladorDashboardAdmin {
             System.err.println("Error cargando imagen en Dashboard: " + ex.getMessage());
         }
     }
-    // //Agregar todos los botones del admin
 
     private void configurarBotonesAnimados() {
         Map<String, JButton> botonesAdmin = new HashMap<>();

@@ -1,86 +1,69 @@
 package Controlador;
 
+import Conexion.Conexion;
 import Modelo.EmailSender;
 import Modelo.Usuario;
 import Vista.ContrasenaNueva;
 import Vista.Dashboard;
 import Vista.DashboardAdmin;
 import Vista.Login;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
+import java.sql.Connection;
+import java.sql.SQLException;
 import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.Timer;
 
 public class ControladorLogin implements ActionListener {
 
-    private Login vista;
+    private final Login vista;
+    private final Usuario usuario;
+    private final Connection conn;
 
     public ControladorLogin(Login vista) {
         this.vista = vista;
-        this.vista.btnInicar.addActionListener(this);
-        this.vista.btnCodigo.addActionListener(this);
+        this.conn = Conexion.conectar();
+        this.usuario = new Usuario(conn);
+        this.vista.getBtnInicar().addActionListener(this);
+        this.vista.getBtnCodigo().addActionListener(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == vista.btnInicar) {
+        if (e.getSource() == vista.getBtnInicar()) {
             iniciarSesion();
-        } else if (e.getSource() == vista.btnCodigo) {
+        } else if (e.getSource() == vista.getBtnCodigo()) {
             abrirPanelRegistro();
         }
     }
 
     private void iniciarSesion() {
-        String correo = vista.TxtUsuario.getText().trim();
-        String contrasena = vista.contrasenaReal.trim();
+        String correo = vista.getTxtUsuario().getText().trim();
+        String contrasena = new String(vista.getTxtContraseña().getPassword());
 
         if (correo.isEmpty() || contrasena.isEmpty() || correo.equals("Usuario") || contrasena.equals("Contraseña")) {
-            JOptionPane.showMessageDialog(vista, "Por favor, complete todos los campos");
+            vista.mostrarMensaje("Por favor, complete todos los campos");
             return;
         }
 
-        if (Usuario.estaRegistrado(correo)) {
-            if (Usuario.verificarContrasena(correo, contrasena)) {
-                JOptionPane.showMessageDialog(vista, "Inicio de sesión exitoso");
-                EmailSender.enviarConfirmacion(correo);
-                abrirDashboard(correo);
+        try {
+            if (usuario.estaRegistrado(correo)) {
+                if (usuario.verificarContrasena(correo, contrasena)) {
+                    vista.mostrarMensaje("Inicio de sesión exitoso");
+                    EmailSender.enviarConfirmacion(correo);
+                    abrirDashboard(correo);
+                } else {
+                    vista.mostrarMensaje("Correo o contraseña incorrecta");
+                }
             } else {
-                JOptionPane.showMessageDialog(vista, "Correo o contraseña incorrecta");
+                vista.mostrarMensaje("No existe una cuenta con ese correo. Por favor, crea una cuenta.");
             }
-        } else {
-            JOptionPane.showMessageDialog(vista, "No existe una cuenta con ese correo. Por favor, crea una cuenta.");
-            resaltarBotonCrearCuenta();
+        } catch (SQLException ex) {
+            vista.mostrarMensaje("Error al conectar con la base de datos: " + ex.getMessage());
         }
     }
 
-    private void resaltarBotonCrearCuenta() {
-        JButton btnCrearCuenta = vista.getBtnCodigo();
-        Color original = btnCrearCuenta.getBackground();
-        Timer timer = new Timer(200, null);
-        timer.addActionListener(new ActionListener() {
-            int count = 0;
-            boolean highlight = false;
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (count >= 6) {
-                    btnCrearCuenta.setBackground(original);
-                    timer.stop();
-                    return;
-                }
-                btnCrearCuenta.setBackground(highlight ? Color.WHITE : original);
-                highlight = !highlight;
-                count++;
-            }
-        });
-        timer.start();
-        btnCrearCuenta.requestFocus();
-    }
-
     private void abrirPanelRegistro() {
-        String correo = vista.TxtUsuario.getText().trim();
+        String correo = vista.getTxtUsuario().getText().trim();
         ContrasenaNueva panelCambio = new ContrasenaNueva(correo);
         JDialog dialog = new JDialog(vista, "Registrar nueva cuenta", true);
         dialog.setContentPane(panelCambio);
@@ -93,15 +76,19 @@ public class ControladorLogin implements ActionListener {
     }
 
     private void abrirDashboard(String correo) {
-        int rol = Usuario.obtenerRolUsuario(correo);
-        if (rol == 2) {
-            DashboardAdmin dashAdmin = new DashboardAdmin(correo);
-            ControladorDashboardAdmin controlador = new ControladorDashboardAdmin(dashAdmin, vista);
-            vista.mostrarPanelEnPanel1(dashAdmin);
-        } else {
-            Dashboard dash = new Dashboard(correo);
-            ControladorDashboard controlador = new ControladorDashboard(dash, vista);
-            vista.mostrarPanelEnPanel1(dash);
+        try {
+            int rol = usuario.obtenerRolUsuario(correo);
+            if (rol == 2) {
+                DashboardAdmin dashAdmin = new DashboardAdmin(correo);
+                new ControladorDashboardAdmin(dashAdmin, vista);
+                vista.mostrarPanelEnPanel1(dashAdmin);
+            } else {
+                Dashboard dash = new Dashboard(correo);
+                new ControladorDashboard(dash, vista);
+                vista.mostrarPanelEnPanel1(dash);
+            }
+        } catch (SQLException ex) {
+            vista.mostrarMensaje("Error al obtener el rol del usuario: " + ex.getMessage());
         }
     }
 }

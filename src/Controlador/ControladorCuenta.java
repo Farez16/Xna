@@ -1,18 +1,15 @@
 package Controlador;
 
+import Conexion.Conexion;
+import Modelo.EmailSender;
 import Modelo.Usuario;
 import Modelo.UsuarioPerfil;
 import Vista.Cuenta;
-import Conexion.Conexion;
-import Modelo.EmailSender;
 import Vista.Dashboard;
 import Vista.DashboardAdmin;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -20,6 +17,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -34,29 +32,30 @@ public class ControladorCuenta {
 
     private final Cuenta vista;
     private final Connection conn;
+    private final Usuario modeloUsuario;
     private UsuarioPerfil usuario;
     private final String correoUsuario;
-    private final Dashboard dashboard; //Para vista estudiante
-    private DashboardAdmin dashboardAdmin; // Para vista admin
+    private final Dashboard dashboard;
+    private final DashboardAdmin dashboardAdmin;
 
-    //Constructor para vista estudiante dashboard normal
     public ControladorCuenta(Cuenta vista, String correo, Dashboard dashboard) {
         this.vista = vista;
         this.conn = Conexion.conectar();
+        this.modeloUsuario = new Usuario(conn);
         this.correoUsuario = correo;
         this.dashboard = dashboard;
-        this.dashboardAdmin = null; // No se usa en este caso
+        this.dashboardAdmin = null;
         cargarDatosUsuario(correo);
         inicializarEventos();
     }
-// Constructor para DashboardAdmin
 
     public ControladorCuenta(Cuenta vista, String correo, DashboardAdmin dashboardAdmin) {
         this.vista = vista;
         this.conn = Conexion.conectar();
+        this.modeloUsuario = new Usuario(conn);
         this.correoUsuario = correo;
         this.dashboardAdmin = dashboardAdmin;
-        this.dashboard = null; // No se usa en este caso
+        this.dashboard = null;
         cargarDatosUsuario(correo);
         inicializarEventos();
     }
@@ -119,9 +118,7 @@ public class ControladorCuenta {
 
     private void mostrarImagen(String ruta) {
         try {
-            // Usar Lblimagen en lugar de labelImagenPerfil
             if (vista.Lblimagen == null) {
-                System.out.println("Lblimagen es null");
                 return;
             }
 
@@ -139,7 +136,6 @@ public class ControladorCuenta {
 
             BufferedImage circleBuffer = crearImagenCircular(img);
             vista.Lblimagen.setIcon(new ImageIcon(circleBuffer));
-            System.out.println("Imagen mostrada en Lblimagen");
 
         } catch (Exception ex) {
             System.err.println("Error al mostrar imagen: " + ex.getMessage());
@@ -163,16 +159,12 @@ public class ControladorCuenta {
 
     private void cargarImagenPorDefecto() {
         try {
-            // Usar Lblimagen en lugar de labelImagenPerfil
             if (vista.Lblimagen == null) {
-                System.out.println("Lblimagen es null en cargarImagenPorDefecto");
                 return;
             }
 
             ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/Imagenes/Users.png"));
-            // Verificar si la imagen se cargó correctamente
             if (defaultIcon.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                System.err.println("No se pudo cargar la imagen por defecto");
                 return;
             }
 
@@ -183,7 +175,6 @@ public class ControladorCuenta {
 
             BufferedImage circleBuffer = crearImagenCircular(buffered);
             vista.Lblimagen.setIcon(new ImageIcon(circleBuffer));
-            System.out.println("Imagen por defecto cargada en Lblimagen");
         } catch (Exception e) {
             System.err.println("Error cargando imagen por defecto: " + e.getMessage());
         }
@@ -241,12 +232,10 @@ public class ControladorCuenta {
 
     private void actualizarImagen(String nuevaRuta) {
         try {
-            // Update database first
-            Usuario.actualizarImagenUsuario(correoUsuario, nuevaRuta);
+            modeloUsuario.actualizarImagenUsuario(correoUsuario, nuevaRuta);
             usuario.setRutaImagen(nuevaRuta);
             mostrarImagen(nuevaRuta);
 
-            // Update both dashboards
             if (dashboard != null) {
                 actualizarImagenEnDashboard(nuevaRuta);
             }
@@ -257,8 +246,7 @@ public class ControladorCuenta {
             JOptionPane.showMessageDialog(vista,
                     "¡Imagen actualizada correctamente en todos los paneles!",
                     "Éxito", JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
             JOptionPane.showMessageDialog(vista,
                     "Error al actualizar imagen: " + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -278,7 +266,7 @@ public class ControladorCuenta {
             System.err.println("Error actualizando imagen en Dashboard: " + ex.getMessage());
         }
     }
-    
+
     private void actualizarImagenEnDashboardAdmin(String ruta) {
         try {
             if (dashboardAdmin != null && dashboardAdmin.LblimagenPrincipal != null) {
@@ -293,20 +281,20 @@ public class ControladorCuenta {
         }
     }
 
-private BufferedImage cargarImagenDesdeRuta(String ruta) throws Exception {
-    if (ruta.startsWith("http")) {
-        return ImageIO.read(new URL(ruta));
-    } else {
-        return ImageIO.read(new File(ruta));
+    private BufferedImage cargarImagenDesdeRuta(String ruta) throws Exception {
+        if (ruta.startsWith("http")) {
+            return ImageIO.read(new URL(ruta));
+        } else {
+            return ImageIO.read(new File(ruta));
+        }
     }
-}
 
     private void cambiarContraseña() {
         String nueva = JOptionPane.showInputDialog(vista, "Ingrese nueva contraseña (mínimo 6 caracteres):");
         if (nueva != null) {
             if (nueva.length() >= 6) {
                 try {
-                    String actual = Usuario.getContrasenaActual(correoUsuario);
+                    String actual = modeloUsuario.getContrasenaActual(correoUsuario);
                     if (nueva.equals(actual)) {
                         JOptionPane.showMessageDialog(vista,
                                 "La nueva contraseña no puede ser igual a la actual",

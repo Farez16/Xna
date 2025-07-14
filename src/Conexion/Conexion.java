@@ -1,14 +1,29 @@
 package Conexion;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class Conexion {
 
-    private final String url = "jdbc:mysql://127.0.0.1:3306/proyecto_kiwchaa";
-    private final String usuario = "root";
-    private String contraseña = "1234";
+    private static final Properties properties = new Properties();
+
+    static {
+        try (InputStream input = Conexion.class.getClassLoader().getResourceAsStream("db.properties")) {
+            if (input == null) {
+                System.out.println("No se pudo encontrar el archivo db.properties");
+            }
+            properties.load(input);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private final String url = properties.getProperty("db.url");
+    private final String usuario = properties.getProperty("db.user");
+    private final String contraseña = properties.getProperty("db.password");
 
     public Connection getConexion() {
         Connection conexion = null;
