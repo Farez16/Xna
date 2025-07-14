@@ -1,18 +1,13 @@
 package Vista;
 
-import java.awt.Graphics2D;
+import Modelo.ImageUtils;
 import java.awt.MediaTracker;
-import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 public class Cuenta extends JPanel {
 
@@ -70,27 +65,13 @@ public class Cuenta extends JPanel {
                 img = ImageIO.read(new java.io.File(ruta));
             }
 
-            BufferedImage circleBuffer = crearImagenCircular(img);
+            BufferedImage circleBuffer = ImageUtils.crearImagenCircular(img);
             Lblimagen.setIcon(new ImageIcon(circleBuffer));
 
         } catch (Exception ex) {
             System.err.println("Error al mostrar imagen: " + ex.getMessage());
             cargarImagenPorDefecto();
         }
-    }
-
-    private BufferedImage crearImagenCircular(BufferedImage img) {
-        int size = 120;
-        BufferedImage circleBuffer = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = circleBuffer.createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        Ellipse2D.Double circle = new Ellipse2D.Double(0, 0, size, size);
-        g2.setClip(circle);
-        g2.drawImage(img, 0, 0, size, size, null);
-        g2.dispose();
-        return circleBuffer;
     }
 
     private void cargarImagenPorDefecto() {
@@ -105,11 +86,11 @@ public class Cuenta extends JPanel {
             }
 
             BufferedImage buffered = new BufferedImage(120, 120, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = buffered.createGraphics();
+            java.awt.Graphics2D g2 = buffered.createGraphics();
             defaultIcon.paintIcon(null, g2, 0, 0);
             g2.dispose();
 
-            BufferedImage circleBuffer = crearImagenCircular(buffered);
+            BufferedImage circleBuffer = ImageUtils.crearImagenCircular(buffered);
             Lblimagen.setIcon(new ImageIcon(circleBuffer));
         } catch (Exception e) {
             System.err.println("Error cargando imagen por defecto: " + e.getMessage());
@@ -234,12 +215,12 @@ public class Cuenta extends JPanel {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>
 

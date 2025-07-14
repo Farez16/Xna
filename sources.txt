@@ -14,6 +14,7 @@ src/Modelo/MostrarDatosAdmin.java
 src/Modelo/Saludo.java
 src/Modelo/EmailSender.java
 src/Modelo/Modelo_Lecciones.java
+src/Modelo/ImageUtils.java
 src/iniciarcongoogle/GoogleAuthService.java
 src/Conexion/Conexion.java
 src/Controlador/ControladorDashboard.java
